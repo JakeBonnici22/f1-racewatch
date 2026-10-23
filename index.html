@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..100,400..700&display=swap">
-<link rel="stylesheet" href="style.css?v=46">
+<link rel="stylesheet" href="style.css?v=50">
 </head>
 <body>
 <header class="topbar">
   <div class="title">
+    <a href="./" id="home-btn" class="home-btn" title="Back to the lobby: what's live, all replays, power units and cost cap">‹ Lobby</a>
     <span class="mode" id="mode">Replay</span>
     <button id="race-btn" class="race-btn" aria-haspopup="dialog" aria-expanded="false"><span class="rb-text"><b>Races</b></span></button>
     <button id="next-pill" class="next-pill" hidden></button>
@@ -101,6 +102,23 @@
   </aside>
 </main>
 
+<div class="lobby" id="lobby" hidden>
+  <div class="lobby-inner">
+    <header class="lobby-top">
+      <div class="brand"><b>Race Watch</b><span>Live F1 timing, track map and race calls</span></div>
+      <nav class="side-tabs lobby-tabs" id="lobby-tabs" role="tablist" aria-label="Lobby sections">
+        <button type="button" role="tab" data-tab="races" class="on">Live &amp; replays</button>
+        <button type="button" role="tab" data-tab="pu">Power units</button>
+        <button type="button" role="tab" data-tab="cap">Cost cap</button>
+      </nav>
+    </header>
+    <div id="lobby-races"></div>
+    <div id="lobby-pu" hidden></div>
+    <div id="lobby-cap" hidden></div>
+    <footer class="lobby-credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA), <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1</a> and FIA documents · Unofficial fan project, not associated with Formula 1</footer>
+  </div>
+</div>
+
 <div class="archive" id="title-sheet" role="dialog" aria-modal="true" aria-label="Title and records" hidden>
   <div class="archive-sheet">
     <header class="archive-top">
@@ -148,21 +166,23 @@
   <div class="credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA) · Unofficial fan project, not associated with Formula 1</div>
 </footer>
 
-<script src="app.js?v=46"></script>
-<script src="analysis.js?v=46"></script>
-<script src="calls.js?v=46"></script>
-<script src="standings.js?v=46"></script>
-<script src="view.js?v=46"></script>
-<script src="columns.js?v=46"></script>
-<script src="resize.js?v=46"></script>
-<script src="races.js?v=46"></script>
-<script src="live.js?v=46"></script>
-<script src="title.js?v=46"></script>
-<script src="records.js?v=46"></script>
-<script src="sheet.js?v=46"></script>
-<script src="quali.js?v=46"></script>
-<script src="strategy.js?v=46"></script>
-<script src="telemetry.js?v=46"></script>
-<script src="radio.js?v=46"></script>
+<script src="app.js?v=50"></script>
+<script src="analysis.js?v=50"></script>
+<script src="calls.js?v=50"></script>
+<script src="standings.js?v=50"></script>
+<script src="view.js?v=50"></script>
+<script src="columns.js?v=50"></script>
+<script src="resize.js?v=50"></script>
+<script src="races.js?v=50"></script>
+<script src="live.js?v=50"></script>
+<script src="title.js?v=50"></script>
+<script src="records.js?v=50"></script>
+<script src="sheet.js?v=50"></script>
+<script src="quali.js?v=50"></script>
+<script src="strategy.js?v=50"></script>
+<script src="telemetry.js?v=50"></script>
+<script src="radio.js?v=50"></script>
+<script src="costcap.js?v=50"></script>
+<script src="lobby.js?v=50"></script>
 </body>
 </html>

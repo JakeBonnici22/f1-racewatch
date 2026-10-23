@@ -506,7 +506,7 @@ def allowed(path):
         return True
     if p.count("/") == 1 and p.endswith((".js", ".css")):
         return True
-    return p.startswith("/data/") and p.endswith(".json") and not p.startswith("/data/jolpica/")
+    return p.startswith("/data/") and p.endswith(".json") and not p.startswith(("/data/jolpica/", "/data/fia/"))
 
 
 class Handler(SimpleHTTPRequestHandler):

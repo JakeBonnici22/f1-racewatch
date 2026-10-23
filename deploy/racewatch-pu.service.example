@@ -1,0 +1,12 @@
+# /etc/systemd/system/racewatch-pu.service - power unit usage from the FIA's
+# event documents (build_pu.py). Run hourly by racewatch-pu.timer.
+[Unit]
+Description=Race Watch: power unit usage from FIA documents
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+WorkingDirectory=/path/to/f1-racewatch
+ExecStart=/path/to/f1-racewatch/.venv/bin/python build_pu.py
+StandardOutput=append:/path/to/f1-racewatch/refresh.log
+StandardError=append:/path/to/f1-racewatch/refresh.log

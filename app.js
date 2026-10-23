@@ -618,6 +618,7 @@ function buildControls() {
   $('#to-start').onclick = () => setT(state.data.lightsOut - 2000);
   $('#scrub').oninput = (e) => setT(Number(e.target.value));
   document.addEventListener('keydown', (e) => {
+    if (document.body.classList.contains('lobby-on')) return; // shortcuts are for the race view
     if (e.target.tagName === 'SELECT') return;
     if (e.code === 'Space' && !e.target.closest?.('button')) { e.preventDefault(); setPlaying(!state.playing); }
     const step = e.shiftKey ? 60_000 : 10_000;
@@ -725,16 +726,17 @@ async function init() {
   const raceIdx = idx.filter((s) => / Race /.test(s.label)); // the live server also saves practice and qualifying
   const key = want && idx.some((s) => String(s.session_key) === want) ? want : String((raceIdx.length ? raceIdx : idx).at(-1).session_key);
   if (typeof initRaces === 'function') {
-    initRaces(all, key, (k) => {
-      history.replaceState(null, '', `?session=${k}`);
+    await initRaces(all, key, (k) => {
+      history.pushState(null, '', `?session=${k}`);
       loadSession(k);
     });
   }
   requestAnimationFrame(frame);
-  // a live session in progress (live_server.py running on race day): go straight to it
+  if (typeof liveStatus === 'function') await liveStatus(); // the lobby shows what's live
+  // the lobby first; a link to a session (?session=, ?live=1) opens it directly
+  if (typeof route === 'function') return route();
   if (typeof liveAutoStart === 'function' && await liveAutoStart()) return;
   await loadSession(key);
-  requestAnimationFrame(frame);
 }
 // wait for every script (live.js, races.js...) before starting
 document.addEventListener('DOMContentLoaded', init);

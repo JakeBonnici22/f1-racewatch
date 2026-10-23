@@ -21,8 +21,14 @@ around it. Built on [OpenF1](https://openf1.org) data.
 - **Title fight and records**: who can still win the championship, the
   clinch scenarios for the next weekend, and all-time records that could fall
   in this race.
-- **Archive** of past races as full replays, the next session with a
-  "tune in" button when it's live, and a calendar export.
+- **Lobby** first: the next live session with a countdown (or a "Watch live"
+  button while one is on), this weekend's sessions, and every finished session
+  as a clearly marked replay.
+- **Power units**: how many of each engine part every driver has used against
+  the season allowance, what the next new part would cost on the grid, and
+  every power unit penalty so far, read from the FIA's own documents.
+- **Cost cap**: the cap, what it excludes, and every team's compliance record
+  (spending itself isn't published).
 
 ## How it works
 
@@ -45,6 +51,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 python3 fetch_session.py          # cache the most recent race (free OpenF1 tier)
 python3 build_calendar.py         # race calendar for the archive
 python3 build_history.py          # optional: all-time records (Jolpica API, ~450 requests on the first run)
+.venv/bin/python build_pu.py      # optional: power unit usage from FIA documents
 .venv/bin/python live_server.py   # then open http://127.0.0.1:8765
 ```
 
@@ -70,6 +77,7 @@ Everything needed is in `deploy/` as templates (replace `YOUR_USER` and
   login in `~/.config/racewatch/env` (see `.env.example`), outside the served
   folder.
 - `racewatch-refresh.*.example`: a daily refresh of history and calendar.
+- `racewatch-pu.*.example`: an hourly power unit refresh from the FIA documents.
 - `racewatch-tunnel.service.example` + `tunnel.yml.example`: a public address
   through a Cloudflare named tunnel, with no ports opened on your network.
   Create the tunnel with `cloudflared tunnel create racewatch` and point a
@@ -100,7 +108,8 @@ what the page produces.
 
 Live and session data from [OpenF1](https://openf1.org); race history from
 the [Jolpica F1 API](https://github.com/jolpica/jolpica-f1) (the Ergast
-successor). Check OpenF1's terms before running a public instance with a
+successor); power unit usage and penalties from the FIA's published event
+documents; cost cap facts from FIA announcements (sources listed on the page). Check OpenF1's terms before running a public instance with a
 sponsor login.
 
 This is an unofficial fan project, not associated with Formula 1 companies.

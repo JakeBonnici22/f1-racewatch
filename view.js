@@ -61,6 +61,7 @@ document.querySelector('#view-menu').addEventListener('click', (e) => {
 });
 document.querySelector('#map-expand').addEventListener('click', () => { layout.mapFull = !layout.mapFull; applyView(); });
 document.addEventListener('keydown', (e) => {
+  if (document.body.classList.contains('lobby-on')) return;
   if (e.target.matches?.('input, select, textarea')) return;
   if (e.key === 'm' || e.key === 'M') { layout.mapFull = !layout.mapFull; applyView(); }
 });
