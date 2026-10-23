@@ -47,7 +47,7 @@ def log(*a):
     print(time.strftime("%H:%M:%S"), *a, flush=True)
 
 
-def get(url, tries=3):
+def get(url, tries=4):
     for i in range(tries):
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60) as r:
@@ -55,8 +55,11 @@ def get(url, tries=3):
         except Exception as e:  # noqa: BLE001
             if i == tries - 1:
                 raise
-            log("retry", url, e)
-            time.sleep(5 * (i + 1))
+            wait = 5 * (i + 1)
+            if getattr(e, "code", None) == 429:  # fia.com rate limit: back off properly
+                wait = int(e.headers.get("Retry-After") or 0) or 60 * (i + 1)
+            log("retry in", wait, "s:", url, e)
+            time.sleep(wait)
 
 
 def season_url(year):
