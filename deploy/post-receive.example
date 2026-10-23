@@ -1,0 +1,14 @@
+#!/bin/sh
+# hooks/post-receive in a bare repo on the server (git init --bare ~/git/f1-racewatch.git).
+# Push-to-deploy: check the pushed main branch out into the live folder and
+# restart the server only when Python files changed (the page itself is static).
+# Needs passwordless `sudo systemctl restart racewatch` for the deploying user.
+DIR=/path/to/f1-racewatch
+while read old new ref; do
+  [ "$ref" = "refs/heads/main" ] || continue
+  git --work-tree="$DIR" --git-dir="$PWD" checkout -f main
+  if [ "$old" = "0000000000000000000000000000000000000000" ] || git --git-dir="$PWD" diff --name-only "$old" "$new" | grep -q "\.py$"; then
+    sudo -n systemctl restart racewatch && echo "server restarted"
+  fi
+  echo "deployed $(git --git-dir="$PWD" log -1 --format=%h%x20%s "$new")"
+done

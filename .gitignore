@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.log
+data/
+results/
+.DS_Store
+
+# personal notes and deploy settings (never committed)
+local/
+*.local.*

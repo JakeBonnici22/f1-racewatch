@@ -1,0 +1,13 @@
+# /etc/systemd/system/racewatch-refresh.service - refreshes race history,
+# championship tables and the calendar. Run daily by racewatch-refresh.timer.
+[Unit]
+Description=Race Watch: refresh race history and calendar
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+WorkingDirectory=/path/to/f1-racewatch
+EnvironmentFile=/home/YOUR_USER/.config/racewatch/env
+ExecStart=/bin/sh -c "python3 build_history.py && python3 fetch_session.py --backfill-championship 2026 && python3 build_calendar.py"
+StandardOutput=append:/path/to/f1-racewatch/refresh.log
+StandardError=append:/path/to/f1-racewatch/refresh.log

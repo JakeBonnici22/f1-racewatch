@@ -1,0 +1,21 @@
+# /etc/systemd/system/racewatch.service - the dashboard server.
+# Replace YOUR_USER and /path/to/f1-racewatch. --host is the address to listen
+# on: 127.0.0.1 if only a tunnel on the same machine reaches it, or a private
+# (e.g. VPN) address to open it on your own network too.
+[Unit]
+Description=Race Watch (F1 live dashboard)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=YOUR_USER
+WorkingDirectory=/path/to/f1-racewatch
+EnvironmentFile=/home/YOUR_USER/.config/racewatch/env
+ExecStart=/path/to/f1-racewatch/.venv/bin/python -u live_server.py --host 127.0.0.1 --port 8765
+Restart=always
+RestartSec=5
+StandardOutput=append:/path/to/f1-racewatch/live_server.log
+StandardError=append:/path/to/f1-racewatch/live_server.log
+
+[Install]
+WantedBy=multi-user.target

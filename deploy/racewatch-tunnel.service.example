@@ -1,0 +1,15 @@
+# /etc/systemd/system/racewatch-tunnel.service - public address through a
+# Cloudflare named tunnel (no open ports on your network). See the README.
+[Unit]
+Description=Race Watch public address (Cloudflare tunnel)
+After=network-online.target racewatch.service
+Wants=network-online.target
+
+[Service]
+User=YOUR_USER
+ExecStart=/usr/local/bin/cloudflared tunnel --config /home/YOUR_USER/.config/racewatch/tunnel.yml run
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Race Watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..100,400..700&display=swap">
+<link rel="stylesheet" href="style.css?v=46">
+</head>
+<body>
+<header class="topbar">
+  <div class="title">
+    <span class="mode" id="mode">Replay</span>
+    <button id="race-btn" class="race-btn" aria-haspopup="dialog" aria-expanded="false"><span class="rb-text"><b>Races</b></span></button>
+    <button id="next-pill" class="next-pill" hidden></button>
+  </div>
+  <div class="lapbox"><span class="lbl">Lap</span><span class="lap-now" id="lap">–</span><span id="lap-total"></span></div>
+  <div class="status" id="status">–</div>
+  <div class="clockbox"><span class="lbl">Race time</span><span id="clock">–</span></div>
+  <div class="weather" id="weather"></div>
+  <button id="title-btn" class="title-btn" aria-haspopup="dialog" title="Who can still win the title, and records in play">Title &amp; records</button>
+  <div class="view-wrap">
+    <button id="view-btn" aria-haspopup="true" aria-expanded="false">View</button>
+    <div class="view-menu" id="view-menu" hidden></div>
+  </div>
+</header>
+
+<main class="grid">
+  <section class="panel board" aria-label="Timing and standings">
+    <div class="side-tabs" id="board-tabs" role="tablist">
+      <button data-tab="timing" class="on" role="tab">Timing</button>
+      <button data-tab="drivers" role="tab">Drivers' title</button>
+      <button data-tab="teams" role="tab">Constructors'</button>
+    </div>
+    <div class="cols-menu" id="cols-menu" hidden></div>
+    <div class="board-scroll">
+      <table id="timing-table">
+        <thead id="board-head"></thead>
+        <tbody id="board"></tbody>
+      </table>
+      <table id="drivers-table" hidden>
+        <thead><tr><th class="num">Pos</th><th class="num" title="Places moved in the championship today">+/−</th><th>Driver</th><th class="num">Points</th><th class="num">Today</th><th class="num">To leader</th></tr></thead>
+        <tbody id="drivers-body"></tbody>
+      </table>
+      <table id="teams-table" hidden>
+        <thead><tr><th class="num">Pos</th><th class="num">+/−</th><th>Team</th><th class="num">Points</th><th class="num">Today</th><th class="num">To leader</th></tr></thead>
+        <tbody id="teams-body"></tbody>
+      </table>
+      <p class="standings-note" id="standings-note">If the race finished in the current order.</p>
+    </div>
+  </section>
+
+  <div class="centre">
+    <section class="panel map-wrap" aria-label="Track map">
+      <canvas id="map"></canvas>
+      <button class="map-expand" id="map-expand" aria-pressed="false" title="Shortcut: M">Expand map</button>
+      <div class="map-hint" id="map-hint">Click a car to follow it</div>
+      <div class="live-loading" id="live-loading" hidden></div>
+    </section>
+    <section class="panel analysis" id="analysis" aria-label="Analysis">
+      <div class="focusbar" id="focusbar" hidden></div>
+      <div class="ribbon-head">
+        <div class="side-tabs an-tabs" id="an-tabs" role="tablist">
+          <button type="button" role="tab" data-an="gaps" class="on">Gaps &amp; fights</button>
+          <button type="button" role="tab" data-an="tyres">Tyre strategy</button>
+          <button type="button" role="tab" data-an="speed">Speed trace</button>
+        </div>
+        <h2 class="gaps-only">Gaps to the leader <span class="follow-hint" id="follow-hint">· click a driver to follow, a second to compare</span></h2>
+        <span class="legend gaps-only"><i class="drs-key"></i> Under 1 s <i class="ghost-key"></i> Rejoin after a stop</span>
+        <span class="legend tyres-only"><i class="tk" style="--c:#e8002d"></i>Soft <i class="tk" style="--c:#ffd12e"></i>Medium <i class="tk" style="--c:#f0f0ec"></i>Hard <i class="tk" style="--c:#43b02a"></i>Inter <i class="tk" style="--c:#2b7bff"></i>Wet <i class="tk used-key"></i>Used set <i class="tk unsure-key"></i>Not confirmed</span>
+      </div>
+      <canvas id="ribbon" class="gaps-only" aria-label="Gap to leader for every car"></canvas>
+      <div class="cards gaps-only">
+        <div class="card" id="battle"></div>
+        <div class="card" id="pitcard"></div>
+      </div>
+      <div class="strategy tyres-only" id="strategy" aria-label="Tyre strategy for every car"></div>
+      <div class="telemetry speed-only" id="telemetry" aria-label="Speed trace for the followed driver"></div>
+    </section>
+  </div>
+
+  <aside class="panel side">
+    <div class="side-tabs" id="side-tabs" role="tablist">
+      <button data-tab="calls-pane" class="on" role="tab">Race calls</button>
+      <button data-tab="rc" role="tab">Race control</button>
+      <button data-tab="pits" role="tab">Pit stops</button>
+      <button data-tab="radio" role="tab">Radio</button>
+    </div>
+    <div class="calls-pane" id="calls-pane">
+      <div class="calls-head">
+        <span id="calls-score" class="calls-score"></span>
+        <span class="calls-filter" id="calls-filter"><button data-f="all" class="on">All</button><button data-f="mine">My drivers</button></span>
+      </div>
+      <ol id="calls"></ol>
+    </div>
+    <ol id="rc" class="feed" hidden></ol>
+    <ol id="pits" class="pits" hidden></ol>
+    <ol id="radio" class="feed radio" hidden></ol>
+  </aside>
+</main>
+
+<div class="archive" id="title-sheet" role="dialog" aria-modal="true" aria-label="Title and records" hidden>
+  <div class="archive-sheet">
+    <header class="archive-top">
+      <h2>Title &amp; records</h2>
+      <div class="side-tabs archive-years" id="title-tabs" role="tablist">
+        <button type="button" role="tab" data-pane="title" class="on">Title fight</button>
+        <button type="button" role="tab" data-pane="records">Records in play</button>
+      </div>
+      <button type="button" class="sheet-close" id="title-close" aria-label="Close">✕</button>
+    </header>
+    <div class="archive-body">
+      <div id="title-pane"></div>
+      <div id="records-pane" hidden></div>
+    </div>
+  </div>
+</div>
+
+<div class="archive" id="archive" role="dialog" aria-modal="true" aria-label="Races" hidden>
+  <div class="archive-sheet">
+    <header class="archive-top">
+      <h2>Races</h2>
+      <div class="side-tabs archive-years" id="archive-years" role="tablist"></div>
+      <button type="button" id="archive-close" aria-label="Close">✕</button>
+    </header>
+    <div class="archive-body" id="archive-body"></div>
+  </div>
+</div>
+
+<footer class="controls">
+  <button id="play" aria-label="Play">▶</button>
+  <div class="speeds" id="speeds" role="group" aria-label="Replay speed"></div>
+  <button id="to-start" title="Jump to lights out">Lights out</button>
+  <div class="live-ctl" id="live-ctl" hidden>
+    <button type="button" id="go-live" class="go-live" hidden>Go live ⏭</button>
+    <span class="delay" title="Hold the data back to match your TV or stream, so the board doesn't spoil what you're about to see. Shift-click for 5 s steps.">
+      TV delay <button type="button" data-delay="-1" aria-label="Less delay">−</button><b id="delay-val">0s</b><button type="button" data-delay="1" aria-label="More delay">+</button>
+    </span>
+  </div>
+  <div class="scrub">
+    <div class="strip" id="strip"></div>
+    <input type="range" id="scrub" min="0" max="1" step="100" value="0" aria-label="Race timeline">
+    <div class="ticks" id="ticks"></div>
+  </div>
+  <div class="keys">Space to play, arrows to skip 10 s, Esc to clear</div>
+  <div class="credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA) · Unofficial fan project, not associated with Formula 1</div>
+</footer>
+
+<script src="app.js?v=46"></script>
+<script src="analysis.js?v=46"></script>
+<script src="calls.js?v=46"></script>
+<script src="standings.js?v=46"></script>
+<script src="view.js?v=46"></script>
+<script src="columns.js?v=46"></script>
+<script src="resize.js?v=46"></script>
+<script src="races.js?v=46"></script>
+<script src="live.js?v=46"></script>
+<script src="title.js?v=46"></script>
+<script src="records.js?v=46"></script>
+<script src="sheet.js?v=46"></script>
+<script src="quali.js?v=46"></script>
+<script src="strategy.js?v=46"></script>
+<script src="telemetry.js?v=46"></script>
+<script src="radio.js?v=46"></script>
+</body>
+</html>

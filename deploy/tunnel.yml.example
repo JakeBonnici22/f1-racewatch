@@ -1,0 +1,7 @@
+# ~/.config/racewatch/tunnel.yml - created with `cloudflared tunnel create racewatch`.
+# Keep the credentials file private (chmod 600); it is the tunnel's key.
+tunnel: YOUR_TUNNEL_ID
+credentials-file: /home/YOUR_USER/.config/racewatch/tunnel-creds.json
+no-autoupdate: true
+ingress:
+  - service: http://127.0.0.1:8765

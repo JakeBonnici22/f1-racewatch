@@ -1,0 +1,10 @@
+# /etc/systemd/system/racewatch-refresh.timer
+[Unit]
+Description=Daily Race Watch data refresh
+
+[Timer]
+OnCalendar=*-*-* 06:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
