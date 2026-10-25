@@ -636,7 +636,8 @@ ol.radio[hidden] { display: none; }
 /* ---------- lobby ---------- */
 .home-btn { color: var(--fog); text-decoration: none; font-size: 12.5px; font-weight: 600; padding: 4px 9px 4px 6px; border-radius: 99px; background: var(--asphalt); white-space: nowrap; }
 .home-btn:hover { color: var(--chalk); background: var(--pitlane); }
-body.lobby-on > .topbar, body.lobby-on > main, body.lobby-on > .controls { visibility: hidden; }
+body.lobby-on > .topbar, body.lobby-on > main, body.lobby-on > .controls { display: none; }
+body.lobby-on { overflow: hidden; }
 .lobby { position: fixed; inset: 0; z-index: 50; overflow-y: auto; background: var(--asphalt); }
 .lobby[hidden] { display: none; }
 .lobby-inner { width: min(1120px, 100%); margin: 0 auto; padding: 22px 24px 40px; }
@@ -787,7 +788,7 @@ td.pu.fresh .pu-n { box-shadow: 0 0 0 2px var(--chalk); border-radius: 50%; text
 .toast[hidden] { display: none; }
 
 @media (max-width: 860px) {
-  .hero-row { grid-template-columns: 1fr; }
+  .hero-row { grid-template-columns: minmax(0, 1fr); }
   .pv-card { min-height: 220px; }
 }
 
