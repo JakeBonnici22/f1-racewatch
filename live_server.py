@@ -504,7 +504,7 @@ def allowed(path):
         return False
     if p in ("/", "/index.html", "/favicon.ico"):
         return True
-    if p.count("/") == 1 and p.endswith((".js", ".css")):
+    if p.count("/") == 1 and p.endswith((".js", ".css", ".png", ".svg", ".ico", ".webmanifest")):
         return True
     return p.startswith("/data/") and p.endswith(".json") and not p.startswith(("/data/jolpica/", "/data/fia/"))
 
@@ -540,13 +540,17 @@ class Handler(SimpleHTTPRequestHandler):
         if not f.is_file():
             return self.send_error(404)
         mtime = f.stat().st_mtime
-        cache = "no-store" if f.name in ("index.json", "calendar.json") else "no-cache"
+        cache = cache_policy(f, mtime)
+        compact = f.name == "location.json" and "fmt=d" in path
         if not self.gz_ok():
-            return self.send_bytes(f.read_bytes(), "application/json", cache)
-        hit = _gz_cache.get(str(f))
+            body = compact_location(f.read_bytes()) if compact else f.read_bytes()
+            return self.send_bytes(body, "application/json", cache)
+        ck = str(f) + ("#d" if compact else "")
+        hit = _gz_cache.get(ck)
         if not hit or hit[0] != mtime:
-            hit = (mtime, gzip.compress(f.read_bytes(), 5))
-            _gz_cache[str(f)] = hit
+            raw = compact_location(f.read_bytes()) if compact else f.read_bytes()
+            hit = (mtime, gzip.compress(raw, 6))
+            _gz_cache[ck] = hit
             if len(_gz_cache) > 40:
                 _gz_cache.pop(next(iter(_gz_cache)))
         body = hit[1]
@@ -568,10 +572,10 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")  # so a new ?v= on the scripts is always seen
         super().end_headers()
 
-    def json(self, obj, code=200):
+    def json(self, obj, code=200, cache="no-store"):
         body = json.dumps(obj, separators=(",", ":")).encode()
         if code == 200:
-            return self.send_bytes(body, "application/json")
+            return self.send_bytes(body, "application/json", cache)
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
@@ -617,13 +621,34 @@ class Handler(SimpleHTTPRequestHandler):
             if q.get("boot", [BOOT])[0] != BOOT:
                 seq = 0  # the server restarted: its sequence numbers started over
             nxt, rows, more = f.store.since(seq)
+            # a full page (more=True) is a fixed slice of the append-only log: the same URL
+            # always returns the same rows, so the CDN can serve the big catch-up downloads
+            same = sk == str(f.store.session["session_key"]) and q.get("boot", [None])[0] == BOOT
+            cache = "public, max-age=30, s-maxage=3600" if (more and same) else "no-store"
             return self.json({"seq": nxt, "more": more, "boot": BOOT, "session": f.store.session,
-                              "now_ms": f.now_ms(), "rate": getattr(f, "speed", 1.0), "rows": rows})
+                              "now_ms": f.now_ms(), "rate": getattr(f, "speed", 1.0), "rows": rows}, cache=cache)
         if not allowed(self.path):
             return self.send_error(404)
         if u.path.startswith("/data/"):
             return self.send_data_file(self.path)
         return super().do_GET()
+
+    def do_POST(self):
+        if urllib.parse.urlparse(self.path).path != "/feedback":
+            return self.send_error(404)
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+            if not 0 < n <= 6000:
+                return self.json({"error": "too long"}, 413)
+            msg = json.loads(self.rfile.read(n))
+            text = str(msg.get("text", "")).strip()
+            page = str(msg.get("page", ""))[:200]
+        except (ValueError, AttributeError):
+            return self.json({"error": "bad request"}, 400)
+        if not 3 <= len(text) <= 2000:
+            return self.json({"error": "write a little more (3 to 2000 characters)"}, 400)
+        ok, why = save_feedback(self.headers.get("CF-Connecting-IP") or self.client_address[0], text, page)
+        return self.json({"ok": True} if ok else {"error": why}, 200 if ok else 429)
 
     def do_HEAD(self):
         if not allowed(self.path):
@@ -632,7 +657,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def status(self):
         f = self.feed
-        out = {"mode": self.mode, "live": False}
+        out = {"mode": self.mode, "live": False, "boot": BOOT}
         if not f:
             return out
         # the error text itself stays in the log; visitors only learn that it's reconnecting
@@ -758,6 +783,54 @@ def telemetry(feed, key, n, lap):
         cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps(out, separators=(",", ":")))
     return out
+
+
+def cache_policy(f, mtime):
+    """What Cloudflare and browsers may keep. Small index files change during the day
+    (new sessions, power unit updates): 5 minutes. A session's files that haven't
+    changed for 3 hours are a finished replay: a day at the edge. Anything newer is
+    being written by the live feed: always ask the server."""
+    if f.name in ("index.json", "calendar.json", "pu.json", "priors.json", "history.json", "preview.json"):
+        return "public, max-age=60, s-maxage=300"
+    if time.time() - mtime > 3 * 3600:
+        return "public, max-age=3600, s-maxage=86400"
+    return "no-cache"
+
+
+def compact_location(raw):
+    """location.json as per-driver delta columns: {"v":2,"d":{n:[dt..],[dx..],[dy..]}}.
+    Times and coordinates change by small steps, so the deltas gzip about 3x smaller."""
+    loc = json.loads(raw)
+    out = {}
+    for n, pts in loc.items():
+        cols, prev = ([], [], []), (0, 0, 0)
+        for p in pts:
+            for i in range(3):
+                v = int(round(p[i]))
+                cols[i].append(v - prev[i])
+            prev = tuple(int(round(p[i])) for i in range(3))
+        out[n] = cols
+    return json.dumps({"v": 2, "d": out}, separators=(",", ":")).encode()
+
+
+_fb = {}
+FEEDBACK = ROOT / "feedback.jsonl"
+
+
+def save_feedback(ip, text, page):
+    """Visitor feedback, appended to feedback.jsonl (not served, not in git) and
+    forwarded to the alert webhook. Five a day per visitor, 2 MB in total."""
+    now = time.time()
+    hits = [t for t in _fb.get(ip, []) if now - t < 86400]
+    if len(hits) >= 5:
+        return False, "thanks, that's plenty for today"
+    if FEEDBACK.exists() and FEEDBACK.stat().st_size > 2_000_000:
+        return False, "feedback is full right now, sorry"
+    _fb[ip] = hits + [now]
+    with FEEDBACK.open("a") as fh:
+        fh.write(json.dumps({"at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "page": page, "text": text}) + "\n")
+    threading.Thread(target=alert, args=("Race Watch feedback", text[:300]), daemon=True).start()
+    return True, ""
 
 
 def reference_session(s):

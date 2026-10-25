@@ -148,7 +148,7 @@ async function livePoll() {
   try {
     let more = true;
     while (more && live.on) {
-      const r = await fetch(`/live/bundle?since=${live.since}&session=${live.sessionKey ?? ''}${live.boot ? `&boot=${live.boot}` : ''}`, { cache: 'no-store' });
+      const r = await fetch(`/live/bundle?since=${live.since}&session=${live.sessionKey ?? live.firstSession ?? ''}${live.boot ? `&boot=${live.boot}` : ''}`, { cache: 'no-store' });
       if (!r.ok) throw new Error(`live feed ${r.status}`);
       const text = await r.text();
       const b = JSON.parse(text);
@@ -189,7 +189,7 @@ function liveReset(session) {
     .then((p) => { live.priors = priorsFor(p, session.circuit_key, session.date_start); if (state.data?.live) state.data.priors = live.priors; });
   const ref = window.liveInfo?.ref;
   if (ref) {
-    Promise.all([fetch(`data/${ref}/session.json`).then((r) => r.json()), fetch(`data/${ref}/location.json`).then((r) => r.json())])
+    Promise.all([fetch(`data/${ref}/session.json`).then((r) => r.json()), fetchLocation(ref)])
       .then(([raw, loc]) => {
         const rd = prepare(raw, loc);
         live.refTrack = rd.track.length ? rd.track : null;
@@ -217,6 +217,9 @@ async function enterLive() {
   if (!st?.session) return false;
   origSetPlaying(false);
   live.on = true; live.follow = true; live.sessionKey = null; live.loadedBytes = 0;
+  // naming the session and server run up front makes even the first catch-up pages cacheable
+  live.firstSession = st.session.session_key; live.boot = st.boot || live.boot || null;
+  live.since = 0; // coming back from the lobby: load the session from the start again
   document.body.classList.add('is-live');
   renderLiveBadge(true); liveLoading();
   if (typeof renderNextPill === 'function') renderNextPill();

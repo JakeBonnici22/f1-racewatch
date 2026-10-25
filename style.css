@@ -377,7 +377,8 @@ ol.feed[hidden], ol.pits[hidden] { display: none; }
 
 @media (max-width: 1100px) {
   body { height: auto; overflow: auto; }
-  .grid { grid-template-columns: 1fr; grid-template-rows: none; }
+  .grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .grid > * { min-width: 0; }
   .board, .map-wrap, .side, .analysis { grid-column: auto; grid-row: auto; }
   .map-wrap { height: 60vh; order: -2; }
   .analysis { order: -1; max-height: none; }
@@ -765,3 +766,69 @@ td.pu.fresh .pu-n { box-shadow: 0 0 0 2px var(--chalk); border-radius: 50%; text
   .hero-act { align-items: flex-start; text-align: left; }
   .pu-pens li { grid-template-columns: 1fr 1fr; }
 }
+
+/* ---------- lobby preview, feedback, share, toast ---------- */
+.lobby-nav { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lb-fb { border-radius: 99px; padding: 7px 14px; font-size: 13px; background: transparent; border: 1px solid var(--line); color: var(--fog); }
+.lb-fb:hover { color: var(--chalk); }
+.hero-row { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, 1fr); gap: 12px; align-items: stretch; }
+.hero-row .hero { height: 100%; }
+.pv-card { background: var(--kerb); border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; min-height: 240px; overflow: hidden; }
+#pv-map { flex: 1; width: 100%; min-height: 180px; display: block; }
+.pv-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px 10px; }
+.pv-foot button { font-size: 12px; padding: 5px 12px; border-radius: 99px; background: var(--chalk); color: var(--asphalt); font-weight: 650; }
+.fb-box { width: min(560px, 100%); }
+.fb-box p { margin: 0 0 10px; font-size: 13px; }
+#fb-text { width: 100%; resize: vertical; min-height: 110px; font: inherit; font-size: 14px; color: var(--chalk); background: var(--asphalt); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+#fb-text:focus { outline: none; border-color: var(--fog); }
+.fb-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+.fb-row .primary { background: var(--chalk); color: var(--asphalt); font-weight: 650; border-radius: 99px; padding: 7px 18px; }
+.toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); z-index: 200; background: var(--chalk); color: var(--asphalt); font-weight: 600; font-size: 13px; padding: 9px 16px; border-radius: 99px; box-shadow: 0 10px 30px rgba(0,0,0,.45); max-width: calc(100vw - 32px); overflow-wrap: anywhere; }
+.toast[hidden] { display: none; }
+
+@media (max-width: 860px) {
+  .hero-row { grid-template-columns: 1fr; }
+  .pv-card { min-height: 220px; }
+}
+
+/* ---------- phones: the race view stacks, controls stay at the bottom ---------- */
+@media (max-width: 760px) {
+  body { overflow-x: hidden; }
+  .topbar { gap: 8px 10px; padding: 8px 10px; }
+  .topbar .race-btn { max-width: calc(100vw - 150px); }
+  .rb-text small { display: none; }
+  .next-pill, .view-wrap, #title-btn, .clockbox .lbl, .lapbox .lbl { display: none; }
+  .lap-now { font-size: 22px; }
+  #clock { font-size: 15px; }
+  .status { padding: 3px 9px 3px 8px; font-size: 12px; }
+  .title-btn { padding: 4px 10px; font-size: 12px; }
+  .grid { padding: 8px; gap: 8px; }
+  .board { order: -1; }
+  .analysis { order: 0; }
+  .speeds button:nth-child(n+6) { display: none; }
+  .topbar .race-btn { padding: 4px 8px 4px 4px; }
+  .resizer { display: none !important; }
+  .map-wrap { height: 56vh; min-height: 300px; }
+  .map-expand, .map-hint { display: none; }
+  .board .board-scroll { max-height: 62vh; }
+  .analysis .cards { min-width: 0; }
+  .analysis { overflow-x: hidden; }
+  .ribbon-head { flex-wrap: wrap; }
+  .ribbon-head h2, .legend { display: none !important; }
+  .side { max-height: 60vh; }
+  .controls { position: sticky; bottom: 0; z-index: 30; flex-wrap: wrap; gap: 8px 10px; padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  #play { width: 36px; height: 36px; }
+  .speeds button { padding: 3px 8px; }
+  #to-start { padding: 5px 10px; font-size: 12px; }
+  .scrub { flex: 1 1 100%; order: 5; padding-top: 0; }
+  .ticks { display: none; }
+  .keys, .credit { display: none; }
+  .toast { bottom: 130px; }
+}
+
+.clean .next-pill, .clean #share-btn, .clean [data-act="feedback"], .clean .keys { display: none !important; }
+
+.hero-row .hero { flex-direction: column; align-items: flex-start; justify-content: space-between; }
+.hero-row .hero-act { align-items: flex-start; text-align: left; }
+.hero-row .hero-act small { max-width: none; }
+.fb-box h2 { color: var(--chalk); padding: 0; }

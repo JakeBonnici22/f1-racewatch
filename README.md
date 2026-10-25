@@ -52,6 +52,7 @@ python3 fetch_session.py          # cache the most recent race (free OpenF1 tier
 python3 build_calendar.py         # race calendar for the archive
 python3 build_history.py          # optional: all-time records (Jolpica API, ~450 requests on the first run)
 .venv/bin/python build_pu.py      # optional: power unit usage from FIA documents
+python3 build_preview.py          # the lobby's moving mini map (latest race, one lap)
 .venv/bin/python live_server.py   # then open http://127.0.0.1:8765
 ```
 

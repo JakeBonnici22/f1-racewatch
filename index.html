@@ -3,11 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Race Watch</title>
+<title>Race Watch · live F1 race dashboard</title>
+<meta name="description" content="Every car on a live track map, plus the calls TV doesn't make: who catches whom, where a car rejoins after its stop, and whether the undercut works. Free, unofficial F1 fan project.">
+<meta name="theme-color" content="#12161d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Race Watch">
+<meta property="og:title" content="Race Watch · live F1 race dashboard">
+<meta property="og:description" content="Every car on a live track map, plus the calls TV doesn't make: who catches whom, where a car rejoins after its stop, and whether the undercut works. Free, no sign-up.">
+<meta property="og:url" content="https://racewatchlive.com/">
+<meta property="og:image" content="https://racewatchlive.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta property="og:image:alt" content="The Race Watch dashboard: live track map, timing board and race calls">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..100,400..700&display=swap">
-<link rel="stylesheet" href="style.css?v=50">
+<link rel="stylesheet" href="style.css?v=52">
 </head>
 <body>
 <header class="topbar">
@@ -21,6 +35,8 @@
   <div class="status" id="status">–</div>
   <div class="clockbox"><span class="lbl">Race time</span><span id="clock">–</span></div>
   <div class="weather" id="weather"></div>
+  <button id="share-btn" class="title-btn" title="Copy a link that opens at this lap, following the same drivers">Share</button>
+  <button type="button" class="title-btn" data-act="feedback" title="Tell me what broke or what to add">Feedback</button>
   <button id="title-btn" class="title-btn" aria-haspopup="dialog" title="Who can still win the title, and records in play">Title &amp; records</button>
   <div class="view-wrap">
     <button id="view-btn" aria-haspopup="true" aria-expanded="false">View</button>
@@ -106,11 +122,14 @@
   <div class="lobby-inner">
     <header class="lobby-top">
       <div class="brand"><b>Race Watch</b><span>Live F1 timing, track map and race calls</span></div>
+      <div class="lobby-nav">
       <nav class="side-tabs lobby-tabs" id="lobby-tabs" role="tablist" aria-label="Lobby sections">
         <button type="button" role="tab" data-tab="races" class="on">Live &amp; replays</button>
         <button type="button" role="tab" data-tab="pu">Power units</button>
         <button type="button" role="tab" data-tab="cap">Cost cap</button>
       </nav>
+      <button type="button" class="lb-fb" data-act="feedback">Feedback</button>
+      </div>
     </header>
     <div id="lobby-races"></div>
     <div id="lobby-pu" hidden></div>
@@ -118,6 +137,18 @@
     <footer class="lobby-credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA), <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1</a> and FIA documents · Unofficial fan project, not associated with Formula 1</footer>
   </div>
 </div>
+
+<div class="archive" id="fb-sheet" role="dialog" aria-modal="true" aria-label="Feedback" hidden>
+  <div class="archive-sheet fb-box">
+    <header class="archive-top"><h2>What should I fix or add?</h2><button type="button" class="sheet-close" id="fb-close" aria-label="Close">✕</button></header>
+    <div class="archive-body">
+      <p class="muted">Something broke, something's confusing, or something you'd like it to predict. It's anonymous: only your message and the page you're on are sent.</p>
+      <textarea id="fb-text" rows="5" maxlength="2000" placeholder="e.g. The undercut call for Norris on lap 23 didn't happen…"></textarea>
+      <div class="fb-row"><span id="fb-note" class="muted small"></span><button type="button" class="primary" id="fb-send">Send</button></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <div class="archive" id="title-sheet" role="dialog" aria-modal="true" aria-label="Title and records" hidden>
   <div class="archive-sheet">
@@ -166,23 +197,24 @@
   <div class="credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA) · Unofficial fan project, not associated with Formula 1</div>
 </footer>
 
-<script src="app.js?v=50"></script>
-<script src="analysis.js?v=50"></script>
-<script src="calls.js?v=50"></script>
-<script src="standings.js?v=50"></script>
-<script src="view.js?v=50"></script>
-<script src="columns.js?v=50"></script>
-<script src="resize.js?v=50"></script>
-<script src="races.js?v=50"></script>
-<script src="live.js?v=50"></script>
-<script src="title.js?v=50"></script>
-<script src="records.js?v=50"></script>
-<script src="sheet.js?v=50"></script>
-<script src="quali.js?v=50"></script>
-<script src="strategy.js?v=50"></script>
-<script src="telemetry.js?v=50"></script>
-<script src="radio.js?v=50"></script>
-<script src="costcap.js?v=50"></script>
-<script src="lobby.js?v=50"></script>
+<script src="app.js?v=52"></script>
+<script src="analysis.js?v=52"></script>
+<script src="calls.js?v=52"></script>
+<script src="standings.js?v=52"></script>
+<script src="view.js?v=52"></script>
+<script src="columns.js?v=52"></script>
+<script src="resize.js?v=52"></script>
+<script src="races.js?v=52"></script>
+<script src="live.js?v=52"></script>
+<script src="title.js?v=52"></script>
+<script src="records.js?v=52"></script>
+<script src="sheet.js?v=52"></script>
+<script src="quali.js?v=52"></script>
+<script src="strategy.js?v=52"></script>
+<script src="telemetry.js?v=52"></script>
+<script src="radio.js?v=52"></script>
+<script src="costcap.js?v=52"></script>
+<script src="lobby.js?v=52"></script>
+<script src="extras.js?v=52"></script>
 </body>
 </html>

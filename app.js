@@ -619,7 +619,7 @@ function buildControls() {
   $('#scrub').oninput = (e) => setT(Number(e.target.value));
   document.addEventListener('keydown', (e) => {
     if (document.body.classList.contains('lobby-on')) return; // shortcuts are for the race view
-    if (e.target.tagName === 'SELECT') return;
+    if (e.target.closest?.('select, input, textarea')) return; // typing, not driving the replay
     if (e.code === 'Space' && !e.target.closest?.('button')) { e.preventDefault(); setPlaying(!state.playing); }
     const step = e.shiftKey ? 60_000 : 10_000;
     if (e.code === 'ArrowRight') { e.preventDefault(); setT(state.t + step); }
@@ -695,11 +695,25 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
-async function loadSession(key) {
+// car positions come as per-driver delta columns (less than half the download)
+async function fetchLocation(key) {
+  const loc = await fetch(`data/${key}/location.json?fmt=d`).then((r) => r.json());
+  if (loc.v !== 2) return loc;
+  const out = {};
+  for (const [n, [dt, dx, dy]] of Object.entries(loc.d)) {
+    const pts = new Array(dt.length);
+    let t = 0, x = 0, y = 0;
+    for (let i = 0; i < dt.length; i++) { t += dt[i]; x += dx[i]; y += dy[i]; pts[i] = [t, x, y]; }
+    out[n] = pts;
+  }
+  return out;
+}
+
+async function loadSession(key, { autoplay = true } = {}) {
   if (typeof exitLive === 'function') exitLive();
   const [raw, loc] = await Promise.all([
     fetch(`data/${key}/session.json`).then((r) => r.json()),
-    fetch(`data/${key}/location.json`).then((r) => r.json()),
+    fetchLocation(key),
   ]);
   state.data = prepare(raw, loc);
   // pit loss and tyre history from earlier races at this circuit (cold start)
@@ -709,12 +723,26 @@ async function loadSession(key) {
   state.feedKey = null; state.callsKey = null; state.callsSeen = Infinity; rowEls.clear(); $('#board').innerHTML = '';
   buildTimeline();
   fitView();
-  setT(state.data.lightsOut - 30_000);
+  // open a few seconds before lights out and start playing: the first thing a visitor
+  // sees is the cars moving, not a paused grid
+  setT(state.data.lightsOut - 4000);
   const p = new URLSearchParams(location.search);
   if (p.has('lap')) {
     const l = state.data.leaderLaps.find((x) => x.n === Number(p.get('lap')));
     if (l) setT(l.t + 1000);
   }
+  if (p.has('follow')) state.selected = Number(p.get('follow'));
+  if (p.has('vs')) state.compare = Number(p.get('vs'));
+  if (autoplay && p.get('play') !== '0') setPlaying(true);
+}
+
+// the leader's lap at the current time (for share links)
+function lapNow() {
+  const d = state.data;
+  if (!d?.leaderLaps?.length) return null;
+  let n = null;
+  for (const l of d.leaderLaps) { if (l.t <= state.t) n = l.n; else break; }
+  return n;
 }
 
 async function init() {
@@ -731,6 +759,7 @@ async function init() {
       loadSession(k);
     });
   }
+  if (new URLSearchParams(location.search).has('clean')) document.body.classList.add('clean'); // screenshots: no countdowns
   requestAnimationFrame(frame);
   if (typeof liveStatus === 'function') await liveStatus(); // the lobby shows what's live
   // the lobby first; a link to a session (?session=, ?live=1) opens it directly

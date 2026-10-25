@@ -154,7 +154,13 @@ function renderLobbyRaces() {
   const done = (races.cal?.years[y] || []).filter((w) => !w.cancelled && w.sessions.some((s) => s.name === 'Race' && Date.parse(s.end) < now))
     .sort((a, b) => Date.parse(b.start) - Date.parse(a.start));
   document.querySelector('#lobby-races').innerHTML = `
-    ${li ? heroLive(li) : heroNext(n)}
+    <div class="hero-row">
+      ${li ? heroLive(li) : heroNext(n)}
+      <section class="pv-card" aria-label="One lap of the latest race">
+        <canvas id="pv-map"></canvas>
+        <div class="pv-foot"><span id="pv-label" class="muted small">Latest race</span><button type="button" id="pv-watch" class="rp-main">▶ Watch the replay</button></div>
+      </section>
+    </div>
     ${weekendStrip(wkNow, li)}
     <section class="rp">
       <div class="rp-head">
@@ -163,6 +169,7 @@ function renderLobbyRaces() {
       </div>
       <div class="rp-grid">${done.map(replayCard).join('') || '<p class="muted">No finished races this season yet.</p>'}</div>
     </section>`;
+  if (typeof startPreview === 'function') startPreview();
 }
 
 // ---------- power units tab ----------
@@ -267,7 +274,7 @@ function renderLobby() {
     const yb = e.target.closest('[data-year]');
     if (yb) { lobby.year = yb.dataset.year; renderLobbyRaces(); return; }
     const rp = e.target.closest('[data-replay]');
-    if (rp) { openReplay(rp.dataset.replay); return; }
+    if (rp) { if (rp.dataset.replay) openReplay(rp.dataset.replay); return; }
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'live') { openLive(); return; }
     if (act === 'cal') {

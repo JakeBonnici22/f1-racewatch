@@ -9,3 +9,4 @@ results/
 # personal notes and deploy settings (never committed)
 local/
 *.local.*
+feedback.jsonl
