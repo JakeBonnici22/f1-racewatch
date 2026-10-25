@@ -494,6 +494,9 @@ class SimFeed:
 # ---------------------------------------------------------------- HTTP
 BOOT = str(int(time.time()))
 _gz_cache = {}
+_pages = {}  # full live catch-up pages: (session, boot, since) -> (gzip bytes, raw bytes)
+_page_locks, _page_guard = {}, threading.Lock()
+PAGE = 60000  # rows per live page
 
 
 def allowed(path):
@@ -572,6 +575,26 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Cache-Control", "no-cache")  # so a new ?v= on the scripts is always seen
         super().end_headers()
 
+    @staticmethod
+    def bundle(f, seq):
+        nxt, rows, more = f.store.since(seq, PAGE)
+        return json.dumps({"seq": nxt, "more": more, "boot": BOOT, "session": f.store.session,
+                           "now_ms": f.now_ms(), "rate": getattr(f, "speed", 1.0), "rows": rows},
+                          separators=(",", ":")).encode()
+
+    def send_page(self, page):
+        gz, body = page
+        out, enc = (gz, True) if self.gz_ok() else (body, False)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(out)))
+        self.send_header("Cache-Control", "public, max-age=30, s-maxage=3600")
+        if enc:
+            self.send_header("Content-Encoding", "gzip")
+        self.send_header("Vary", "Accept-Encoding")
+        self.end_headers()
+        self.wfile.write(out)
+
     def json(self, obj, code=200, cache="no-store"):
         body = json.dumps(obj, separators=(",", ":")).encode()
         if code == 200:
@@ -620,13 +643,25 @@ class Handler(SimpleHTTPRequestHandler):
                 seq = 0  # the session changed under the page: start over
             if q.get("boot", [BOOT])[0] != BOOT:
                 seq = 0  # the server restarted: its sequence numbers started over
-            nxt, rows, more = f.store.since(seq)
             # a full page (more=True) is a fixed slice of the append-only log: the same URL
-            # always returns the same rows, so the CDN can serve the big catch-up downloads
+            # always returns the same rows. Build it once, keep the gzipped bytes, and let
+            # the CDN keep it too, so a crowd joining mid-race costs one build per page.
             same = sk == str(f.store.session["session_key"]) and q.get("boot", [None])[0] == BOOT
-            cache = "public, max-age=30, s-maxage=3600" if (more and same) else "no-store"
-            return self.json({"seq": nxt, "more": more, "boot": BOOT, "session": f.store.session,
-                              "now_ms": f.now_ms(), "rate": getattr(f, "speed", 1.0), "rows": rows}, cache=cache)
+            if same and len(f.store.log) - seq >= PAGE:
+                # single flight: the first request builds the page, everyone else waits for it
+                ck = (sk, BOOT, seq)
+                with _page_guard:
+                    lk = _page_locks.setdefault(ck, threading.Lock())
+                with lk:
+                    page = _pages.get(ck)
+                    if page is None:
+                        body = self.bundle(f, seq)
+                        page = _pages[ck] = (gzip.compress(body, 5), body)
+                        while len(_pages) > 80:
+                            old = next(iter(_pages))
+                            _pages.pop(old); _page_locks.pop(old, None)
+                return self.send_page(page)
+            return self.send_bytes(self.bundle(f, seq), "application/json", "no-store")
         if not allowed(self.path):
             return self.send_error(404)
         if u.path.startswith("/data/"):
@@ -895,6 +930,12 @@ def reference_laps(s):
     return best
 
 
+class Server(ThreadingHTTPServer):
+    # the default backlog of 5 resets connections when a crowd polls at once
+    request_queue_size = 512
+    daemon_threads = True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8765)
@@ -934,7 +975,7 @@ def main():
         threading.Thread(target=feed.run, daemon=True).start()
 
     Handler.feed, Handler.mode = feed, mode
-    srv = ThreadingHTTPServer((a.host, a.port), partial(Handler, directory=str(ROOT)))
+    srv = Server((a.host, a.port), partial(Handler, directory=str(ROOT)))
 
     def bye(*_):
         log("stopping")
