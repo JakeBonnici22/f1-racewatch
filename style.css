@@ -502,6 +502,14 @@ body.is-live .keys, body.is-live #to-start, body.is-live.live-edge #speeds { dis
 .weather { min-width: 0; overflow: hidden; white-space: nowrap; }
 @media (max-width: 1500px) { .weather span:nth-child(n+3) { display: none; } }
 
+/* never let the top bar widen the page: on 1280-1680px laptops it pushed the race calls off screen */
+body { grid-template-columns: minmax(0, 1fr); }
+.topbar { min-width: 0; flex-wrap: wrap; row-gap: 8px; }
+.weather { flex: 1 1 0; justify-content: flex-end; }
+@media (max-width: 1680px) { .next-pill:not(.live) { display: none; } }
+@media (max-width: 1500px) { .topbar [data-act="feedback"] { display: none; } }
+@media (max-width: 1400px) { .topbar:has(.next-pill.live) #title-btn { display: none; } }
+
 .credit { color: var(--dim); font-size: 11px; white-space: nowrap; }
 .credit a { color: var(--fog); }
 
