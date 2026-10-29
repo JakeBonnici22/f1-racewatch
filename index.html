@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Race Watch · live F1 race dashboard</title>
+<title>Race Watch: live F1 race dashboard</title>
 <meta name="description" content="Every car on a live track map, plus the calls TV doesn't make: who catches whom, where a car rejoins after its stop, and whether the undercut works. Free, unofficial F1 fan project.">
-<meta name="theme-color" content="#12161d">
+<meta name="theme-color" content="#1c1f22">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Race Watch">
-<meta property="og:title" content="Race Watch · live F1 race dashboard">
+<meta property="og:title" content="Race Watch: live F1 race dashboard">
 <meta property="og:description" content="Every car on a live track map, plus the calls TV doesn't make: who catches whom, where a car rejoins after its stop, and whether the undercut works. Free, no sign-up.">
 <meta property="og:url" content="https://racewatchlive.com/">
-<meta property="og:image" content="https://racewatchlive.com/og.png?v=3">
+<meta property="og:image" content="https://racewatchlive.com/og.png?v=4">
 <meta property="og:image:width" content="2400">
 <meta property="og:image:height" content="1254">
-<meta property="og:image:alt" content="The Race Watch dashboard: live track map, gap chart and race calls">
+<meta property="og:image:alt" content="The Race Watch dashboard: live track map and race calls as pit boards">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira:wdth,wght@75..100,400..700&display=swap">
-<link rel="stylesheet" href="style.css?v=54">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
+<link rel="stylesheet" href="style.css?v=60">
 </head>
 <body>
 <header class="topbar">
@@ -84,7 +84,7 @@
           <button type="button" role="tab" data-an="tyres">Tyre strategy</button>
           <button type="button" role="tab" data-an="speed">Speed trace</button>
         </div>
-        <h2 class="gaps-only">Gaps to the leader <span class="follow-hint" id="follow-hint">· click a driver to follow, a second to compare</span></h2>
+        <h2 class="gaps-only">Gaps to the leader <span class="follow-hint" id="follow-hint">Click a driver to follow, a second to compare</span></h2>
         <span class="legend gaps-only"><i class="drs-key"></i> Under 1 s <i class="ghost-key"></i> Rejoin after a stop</span>
         <span class="legend tyres-only"><i class="tk" style="--c:#e8002d"></i>Soft <i class="tk" style="--c:#ffd12e"></i>Medium <i class="tk" style="--c:#f0f0ec"></i>Hard <i class="tk" style="--c:#43b02a"></i>Inter <i class="tk" style="--c:#2b7bff"></i>Wet <i class="tk used-key"></i>Used set <i class="tk unsure-key"></i>Not confirmed</span>
       </div>
@@ -123,7 +123,7 @@
     <header class="lobby-top">
       <div class="brand"><b>Race Watch</b><span>Live F1 timing, track map and race calls</span></div>
       <div class="lobby-nav">
-      <nav class="side-tabs lobby-tabs" id="lobby-tabs" role="tablist" aria-label="Lobby sections">
+      <nav class="lobby-tabs" id="lobby-tabs" role="tablist" aria-label="Lobby sections">
         <button type="button" role="tab" data-tab="races" class="on">Live &amp; replays</button>
         <button type="button" role="tab" data-tab="pu">Power units</button>
         <button type="button" role="tab" data-tab="cap">Cost cap</button>
@@ -134,7 +134,7 @@
     <div id="lobby-races"></div>
     <div id="lobby-pu" hidden></div>
     <div id="lobby-cap" hidden></div>
-    <footer class="lobby-credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA), <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1</a> and FIA documents · Unofficial fan project, not associated with Formula 1</footer>
+    <footer class="lobby-credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA), <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">Jolpica F1</a> and FIA documents. Unofficial fan project, not associated with Formula 1.</footer>
   </div>
 </div>
 
@@ -194,28 +194,28 @@
     <div class="ticks" id="ticks"></div>
   </div>
   <div class="keys">Space to play, arrows to skip 10 s, Esc to clear</div>
-  <div class="credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA) · Unofficial fan project, not associated with Formula 1</div>
+  <div class="credit">Data <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1</a> (CC BY-NC-SA). Unofficial fan project, not associated with Formula 1.</div>
 </footer>
 
-<script src="app.js?v=53"></script>
-<script src="analysis.js?v=53"></script>
-<script src="calls.js?v=53"></script>
-<script src="standings.js?v=53"></script>
-<script src="view.js?v=53"></script>
-<script src="columns.js?v=53"></script>
-<script src="resize.js?v=53"></script>
-<script src="races.js?v=53"></script>
-<script src="live.js?v=53"></script>
-<script src="title.js?v=53"></script>
-<script src="records.js?v=53"></script>
-<script src="sheet.js?v=53"></script>
-<script src="quali.js?v=53"></script>
-<script src="strategy.js?v=53"></script>
-<script src="telemetry.js?v=53"></script>
-<script src="radio.js?v=53"></script>
-<script src="costcap.js?v=53"></script>
-<script src="lobby.js?v=53"></script>
-<script src="extras.js?v=53"></script>
+<script src="app.js?v=60"></script>
+<script src="analysis.js?v=60"></script>
+<script src="calls.js?v=60"></script>
+<script src="standings.js?v=60"></script>
+<script src="view.js?v=60"></script>
+<script src="columns.js?v=60"></script>
+<script src="resize.js?v=60"></script>
+<script src="races.js?v=60"></script>
+<script src="live.js?v=60"></script>
+<script src="title.js?v=60"></script>
+<script src="records.js?v=60"></script>
+<script src="sheet.js?v=60"></script>
+<script src="quali.js?v=60"></script>
+<script src="strategy.js?v=60"></script>
+<script src="telemetry.js?v=60"></script>
+<script src="radio.js?v=60"></script>
+<script src="costcap.js?v=60"></script>
+<script src="lobby.js?v=60"></script>
+<script src="extras.js?v=60"></script>
 <!-- Cloudflare Web Analytics (cookie-free visit counts) --><script defer type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "b85e33ae742d4633bccbc69ccc753bdb"}'></script>
 </body>
 </html>

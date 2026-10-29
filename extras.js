@@ -26,7 +26,7 @@ async function shareMoment() {
   const url = shareUrl();
   const what = document.querySelector('#race-btn b')?.textContent || 'Race Watch';
   if (navigator.share && matchMedia('(pointer: coarse)').matches) {
-    try { await navigator.share({ title: `Race Watch · ${what}`, url }); return; } catch { /* cancelled: fall back to copying */ }
+    try { await navigator.share({ title: `Race Watch: ${what}`, url }); return; } catch { /* cancelled: fall back to copying */ }
   }
   try {
     await navigator.clipboard.writeText(url);
@@ -89,7 +89,7 @@ async function startPreview() {
   }
   const p = preview.data;
   const lbl = document.querySelector('#pv-label');
-  if (lbl) lbl.textContent = `${p.name} · lap ${p.lap}`;
+  if (lbl) lbl.textContent = `${p.name}, lap ${p.lap}`;
   const btn = document.querySelector('#pv-watch');
   if (btn) btn.dataset.replay = p.session_key;
   cancelAnimationFrame(preview.raf);
@@ -127,7 +127,7 @@ function drawPreview(cv, f) {
   const P = (x, y) => [v.ox + (x * v.c - y * v.s) * v.scale, v.oy - (x * v.s + y * v.c) * v.scale];
   ctx.clearRect(0, 0, w, h);
   ctx.lineJoin = ctx.lineCap = 'round';
-  ctx.strokeStyle = '#2c3542'; ctx.lineWidth = 9;
+  ctx.strokeStyle = '#3b4146'; ctx.lineWidth = 9;
   ctx.beginPath();
   p.trackPts.forEach(([x, y], i) => { const [sx, sy] = P(x, y); if (i) ctx.lineTo(sx, sy); else ctx.moveTo(sx, sy); });
   ctx.stroke();
@@ -138,9 +138,10 @@ function drawPreview(cv, f) {
     const [sx, sy] = P(a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k);
     ctx.fillStyle = `#${c.colour}`;
     ctx.beginPath(); ctx.arc(sx, sy, 4.5, 0, Math.PI * 2); ctx.fill();
-    if (ci < 3) { // name the top three
-      ctx.fillStyle = '#e9e6df'; ctx.font = '600 11px Saira, system-ui, sans-serif';
-      ctx.fillText(c.code, sx + 7, sy - 6);
+    if (ci < 3) { // name the top three; flip the label to the left near the right edge
+      ctx.fillStyle = '#eeede6'; ctx.font = '600 11px Archivo, system-ui, sans-serif';
+      const tw = ctx.measureText(c.code).width;
+      ctx.fillText(c.code, sx + 7 + tw > w - 2 ? sx - 7 - tw : sx + 7, sy - 6);
     }
   }
 }

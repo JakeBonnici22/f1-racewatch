@@ -34,7 +34,7 @@ function renderStrategy(t) {
     const cur = segs.at(-1);
     const age = cur ? (cur.age0 + (r.curLap - cur.from)) : null;
     const bars = segs.map((s) => {
-      const [letter, colour] = s.c && TYRES[s.c] ? TYRES[s.c] : ['?', '#6b7480'];
+      const [letter, colour] = s.c && TYRES[s.c] ? TYRES[s.c] : ['?', '#6e757a'];
       const x = ((s.from - 1) / total) * 100, w = ((s.to - s.from + 1) / total) * 100;
       const laps = s.to - s.from + 1;
       const tip = `${r.drv.code}: ${s.c ? s.c.toLowerCase() : 'new tyres, compound not confirmed'}, laps ${s.from}–${s.to} (${laps} lap${laps > 1 ? 's' : ''})${s.age0 ? `, ${s.age0} laps old at the start` : ''}`;

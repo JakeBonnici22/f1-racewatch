@@ -64,7 +64,7 @@ function renderRaceButton() {
   const btn = document.querySelector('#race-btn');
   btn.innerHTML = w
     ? `<span class="rb-round">${w.round ? 'R' + w.round : ''}</span>
-       <span class="rb-text"><b>${esc(w.name)}</b><small>${sub ? `${esc(sub)} · ` : ''}${esc(w.location)} · ${RACE_FMT.date.format(new Date(w.sessions.find((s) => s.name === (sub || 'Race'))?.start || w.start))}</small></span>
+       <span class="rb-text"><b>${esc(w.name)}</b><small>${sub ? `${esc(sub)}, ` : ''}${esc(w.location)}, ${RACE_FMT.date.format(new Date(w.sessions.find((s) => s.name === (sub || 'Race'))?.start || w.start))}</small></span>
        <span class="rb-chev" aria-hidden="true">▾</span>`
     : `<span class="rb-text"><b>${esc(ix?.label || 'Choose a race')}</b></span><span class="rb-chev" aria-hidden="true">▾</span>`;
   btn.title = w?.official ? `${w.official}\nClick for the race archive and upcoming sessions` : 'Race archive and upcoming sessions';
@@ -79,7 +79,7 @@ function renderNextPill() {
     pill.hidden = false;
     pill.classList.add('live');
     pill.dataset.action = on ? '' : 'tune-in';
-    pill.innerHTML = `<span class="dot"></span>${li.mode === 'sim' ? 'Simulated live' : 'Live now'} · ${esc(short(w?.name || li.session.location))} ${esc(li.session.session_name)}${on ? '' : ' · <b>Tune in</b>'}`;
+    pill.innerHTML = `<span class="dot"></span>${li.mode === 'sim' ? 'Simulated live' : 'Live now'}: ${esc(short(w?.name || li.session.location))} ${esc(li.session.session_name)}${on ? '' : ' <b>Tune in</b>'}`;
     return;
   }
   delete pill.dataset.action;
@@ -89,7 +89,7 @@ function renderNextPill() {
   pill.hidden = false;
   pill.classList.toggle('live', st === 'live');
   pill.innerHTML = st === 'live'
-    ? `<span class="dot"></span>Live now · ${esc(short(n.w.name))} ${esc(n.s.name)}`
+    ? `<span class="dot"></span>Live now: ${esc(short(n.w.name))} ${esc(n.s.name)}`
     : `<span class="np-lbl">Next</span>${esc(short(n.w.name))} ${esc(n.s.name)} <b>${countdown(Date.parse(n.s.start) - Date.now())}</b>`;
 }
 
@@ -115,14 +115,14 @@ function nextCard() {
     const st = sessionState(s, now);
     return `<li class="ses ${st} ${s.name === 'Race' ? 'is-race' : ''}">
       <span class="ses-name">${esc(s.name)}</span>
-      <span class="ses-when">${RACE_FMT.day.format(new Date(s.start))} · ${RACE_FMT.time.format(new Date(s.start))}</span>
+      <span class="ses-when">${RACE_FMT.day.format(new Date(s.start))}, ${RACE_FMT.time.format(new Date(s.start))}</span>
       <span class="ses-st">${st === 'live' ? '<span class="dot"></span>Live' : st === 'done' ? 'Done' : st === 'cancelled' ? 'Cancelled' : countdown(Date.parse(s.start) - now)}</span></li>`;
   }).join('');
   const raceLive = sessionState(race, now) === 'live';
   return `<section class="next-card ${live ? 'is-live' : ''}">
     <div class="nc-head">
       <div>
-        <span class="nc-kicker">${raceLive ? '<span class="dot"></span>Race live now' : live ? `<span class="dot"></span>${esc(live.name)} live now` : 'Next race'} · Round ${w.round}</span>
+        <span class="nc-kicker">${raceLive ? '<span class="dot"></span>Race live now' : live ? `<span class="dot"></span>${esc(live.name)} live now` : 'Next race'}, round ${w.round}</span>
         <h3>${esc(w.name)}</h3>
         <p class="official">${esc(w.official)}</p>
         <p class="nc-where">${esc(w.circuit || w.location)}, ${esc(w.country)}</p>
@@ -130,7 +130,7 @@ function nextCard() {
       <div class="nc-count">
         <span>Lights out</span>
         <b data-countdown="${race.start}">${raceLive ? 'Racing now' : countdown(Date.parse(race.start) - now)}</b>
-        <small>${RACE_FMT.day.format(new Date(race.start))} · ${RACE_FMT.time.format(new Date(race.start))} your time</small>
+        <small>${RACE_FMT.day.format(new Date(race.start))}, ${RACE_FMT.time.format(new Date(race.start))} your time</small>
       </div>
     </div>
     <ol class="ses-list">${ses}</ol>
@@ -153,7 +153,7 @@ function raceCard(w) {
     state = race && sessionState(race, now) === 'live' ? 'live' : 'upcoming';
     action = `<span class="rc-st">${state === 'live' ? '<span class="dot"></span>Live now' : race ? countdown(Date.parse(race.start) - now) : 'Upcoming'}</span>`;
   } else if (isCur) { state = 'current'; action = '<span class="rc-st">Watching</span>'; }
-  else if (ix && ix.map !== false) { state = 'ready'; action = '<span class="rc-st go">Watch replay →</span>'; }
+  else if (ix && ix.map !== false) { state = 'ready'; action = '<span class="rc-st go">Watch replay</span>'; }
   else if (ix) { state = 'nomap'; action = '<span class="rc-st">Map not downloaded yet</span>'; }
   else { state = 'missing'; action = '<span class="rc-st">Not downloaded yet</span>'; }
   const when = race ? RACE_FMT.date.format(new Date(race.start)) : RACE_FMT.date.format(new Date(w.start));
@@ -161,7 +161,7 @@ function raceCard(w) {
   const tag = state === 'ready' ? 'button' : 'div';
   return `<${tag} class="race-card ${state}" ${state === 'ready' ? `data-key="${w.race_key}" type="button"` : ''} title="${esc(w.official || w.name)}">
     <span class="rc-round">${w.round ? 'R' + w.round : '–'}</span>
-    <span class="rc-main"><b>${esc(w.name)}</b><small>${esc(w.location)} · ${when}</small></span>
+    <span class="rc-main"><b>${esc(w.name)}</b><small>${esc(w.location)}, ${when}</small></span>
     ${pod}${action}
   </${tag}>`;
 }
@@ -175,7 +175,7 @@ function renderArchive() {
   document.querySelector('#archive-years').innerHTML = years.map((k) =>
     `<button type="button" role="tab" data-year="${k}" class="${k === y ? 'on' : ''}" aria-selected="${k === y}">${k}</button>`).join('');
   box.innerHTML = `${nextCard()}
-    <div class="arch-head"><h3>${y} season</h3><span>${done} of ${rows.filter((w) => !w.cancelled).length} races run · click a race to watch the replay</span></div>
+    <div class="arch-head"><h3>${y} season</h3><span>${done} of ${rows.filter((w) => !w.cancelled).length} races run. Pick one to watch the replay.</span></div>
     <div class="race-grid">${rows.map(raceCard).join('')}</div>`;
 }
 

@@ -64,5 +64,5 @@ function renderCostCap() {
       <tr class="cc-sep"><th colspan="${C.years.length + 1}">Engine makers (cap since 2023; others all compliant)</th></tr>
       ${C.engines.map((t) => `<tr><th scope="row">${esc(t.team)}</th>${C.years.map((y) => (y < 2023 ? '<td class="cc-na">–</td>' : capCell(t, y))).join('')}</tr>`).join('')}
     </table></div>
-    <p class="lb-foot">As of ${esc(C.asOf)}. Sources: ${C.sources.map(([t, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join(' · ')}</p>`;
+    <p class="lb-foot">As of ${esc(C.asOf)}. Sources: ${C.sources.map(([t, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`).join('; ')}</p>`;
 }

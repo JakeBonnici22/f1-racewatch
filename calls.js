@@ -123,7 +123,7 @@ function buildCalls(d) {
     else if (gap > CALL.DRS_CLEAR) { st.under = 0; st.active = false; }
     if (st.under >= 2 && !st.active && cooled('drs', key, l.n)) {
       st.active = true;
-      add({ t, type: 'battle', kind: 'drs', imp: IMP.drs, drivers: [n, a],
+      add({ t, type: 'battle', kind: 'drs', imp: IMP.drs, drivers: [n, a], board: '+' + gap.toFixed(1),
         text: `${C(n)} is in DRS range of ${C(a)}, ${gap.toFixed(2)}s behind.` });
     }
     drs.set(key, st);
@@ -140,7 +140,7 @@ function buildCalls(d) {
       const rate = Math.min(b.delta, closing);
       const byLap = l.n + Math.ceil((gap - CALL.CATCH_TARGET) / rate);
       if (byLap - l.n <= CALL.CATCH_MAX_LAPS && byLap <= d.totalLaps && cooled('catch', key, l.n)) {
-        add({ t, type: 'battle', kind: 'catch', imp: IMP.catch, drivers: [n, a],
+        add({ t, type: 'battle', kind: 'catch', imp: IMP.catch, drivers: [n, a], board: 'L' + byLap,
           text: `${C(n)} is closing on ${C(a)} by ${rate.toFixed(2)}s a lap and is ${gap.toFixed(1)}s behind. At this rate he's within ${CALL.CATCH_TARGET === 1 ? 'a second' : CALL.CATCH_TARGET.toFixed(1) + 's'} of him by lap ${byLap}.`,
           pred: { kind: 'catch', chaser: n, target: a, by: byLap } });
       }
@@ -165,7 +165,7 @@ function buildCalls(d) {
     if (fg && stintLens.length >= 3 && lapsLeft > 5 && gap > 0.2 && gap + CALL.UNDERCUT_MARGIN < fg.gain && field[i].r.pos <= 12
         && tyreAge(n) >= winAge && tyreAge(a) >= winAge
         && cooled('undercut', String(n), l.n)) {
-      add({ t, type: 'strategy', kind: 'undercut', imp: IMP.undercut, drivers: [n, a],
+      add({ t, type: 'strategy', kind: 'undercut', imp: IMP.undercut, drivers: [n, a], board: 'BOX',
         text: `Undercut is on for ${C(n)} against ${C(a)}: ${gap.toFixed(1)}s behind, and new tyres have been worth ${fg.gain.toFixed(1)}s a lap here. If ${code(n)} stops first he should come out ahead.`,
         pred: { kind: 'undercut', chaser: n, target: a, lap: l.n } });
     }
@@ -184,7 +184,7 @@ function buildCalls(d) {
     const r = lossNow && rejoinAt(d, tEntry, p.num, fieldAtT(tEntry), lossNow.loss);
     const cost = p.loss != null ? `lost ${p.loss.toFixed(1)}s` : `${p.lane ? p.lane.toFixed(1) + 's in the lane' : 'stopped'}`;
     const others = d.pits.rows.filter((q) => q.num !== p.num && Math.abs(q.lap - p.lap) <= 1).length;
-    add({ t, type: 'strategy', kind: 'pit', imp: IMP.pit, drivers: [p.num],
+    add({ t, type: 'strategy', kind: 'pit', imp: IMP.pit, drivers: [p.num], board: 'P' + after,
       text: `${C(p.num)} pitted from P${before}: ${cost}, back out in P${after}.${r ? ` We predicted P${r.pos}.` : ''}`,
       pred: r ? { kind: 'rejoin', predicted: r.pos, actual: after, settled: t,
         voidWhy: p.lap <= 5 ? 'Not scored: opening laps' : others >= 4 ? `Not scored: ${others} other cars pitted around the same time` : null } : null });
@@ -199,14 +199,14 @@ function buildCalls(d) {
       const free = [];
       field.forEach((f, j) => { const nx = field[j + 1]; if (nx && loss && nx.gap - f.gap > loss.loss) free.push(f.n); });
       const name = s === 'SC' ? 'Safety car' : 'Virtual safety car';
-      add({ t, type: 'status', kind: 'free', imp: IMP.free, drivers: free.length ? free.slice(0, 3) : [field[0]?.n].filter(Boolean),
+      add({ t, type: 'status', kind: 'free', imp: IMP.free, board: s, drivers: free.length ? free.slice(0, 3) : [field[0]?.n].filter(Boolean),
         text: `${name}. A stop now costs about ${loss ? loss.loss.toFixed(0) : '?'}s${loss && !loss.measured ? ' (estimate)' : ''} instead of ${green ? green.loss.toFixed(0) : '?'}s. ` +
           (free.length ? `Free stop for ${free.map(C).join(', ')}: they would keep their places.` : 'Nobody has a big enough gap behind for a free stop.') });
     } else if (s === 'RED') {
-      add({ t, type: 'status', kind: 'red', imp: IMP.red, drivers: [fieldAtT(t)[0]?.n].filter(Boolean), text: 'Red flag. The session is stopped.' });
+      add({ t, type: 'status', kind: 'red', imp: IMP.red, board: 'RED', drivers: [fieldAtT(t)[0]?.n].filter(Boolean), text: 'Red flag. The session is stopped.' });
     } else if (s === 'GREEN' && ['SC', 'VSC', 'SC_IN', 'VSC_END', 'RED'].includes(prev)) {
       const f = fieldAtT(t);
-      add({ t, type: 'status', kind: 'green', imp: IMP.green, drivers: [f[0]?.n].filter(Boolean),
+      add({ t, type: 'status', kind: 'green', imp: IMP.green, board: 'GREEN', drivers: [f[0]?.n].filter(Boolean),
         text: `Green flag. Racing resumes with ${C(f[0]?.n)} leading${f[1] ? ` from ${C(f[1].n)}` : ''}.` });
     }
   }
@@ -221,7 +221,7 @@ function buildCalls(d) {
     if (!kind) continue;
     const nums = [...m.matchAll(/CAR (\d+)/g)].map((x) => Number(x[1])).filter((x) => d.drivers.has(x));
     if (!nums.length) continue;
-    add({ t: r.t, type: 'stewards', kind, imp: IMP[kind], drivers: nums.slice(0, 2), text: tidyMsg(r.message) });
+    add({ t: r.t, type: 'stewards', kind, imp: IMP[kind], board: { pen: 'PEN', inv: 'INV', nfa: 'NFA' }[kind], drivers: nums.slice(0, 2), text: tidyMsg(r.message) });
   }
 
   // ---------- overtakes on track: a one-place gain that holds 10 s, with
@@ -239,7 +239,7 @@ function buildCalls(d) {
       const g0 = gapAt(d, n, t - 15_000), g1 = gapAt(d, loser, t - 15_000);
       if (g0 == null || g1 == null || Math.abs(g0 - g1) > CALL.PASS_MAX_GAP + 1) continue; // was close behind shortly before
       if (!cooled('pass', `${n}>${loser}`, leaderLap(t))) continue;
-      add({ t: tc, type: 'battle', kind: 'pass', imp: IMP.pass, drivers: [n, loser], text: `${C(n)} passes ${C(loser)} for P${pos}.` });
+      add({ t: tc, type: 'battle', kind: 'pass', imp: IMP.pass, board: 'P' + pos, drivers: [n, loser], text: `${C(n)} passes ${C(loser)} for P${pos}.` });
     }
   }
 
@@ -248,7 +248,7 @@ function buildCalls(d) {
   for (const w of d.weather.rows) {
     if (!!w.rainfall !== wet) {
       wet = !!w.rainfall;
-      if (w.t > d.lightsOut - 600_000) add({ t: w.t, type: 'status', kind: 'rain', imp: IMP.rain, drivers: [], text: wet ? 'Rain reported at the track.' : 'Rain has stopped.' });
+      if (w.t > d.lightsOut - 600_000) add({ t: w.t, type: 'status', kind: 'rain', imp: IMP.rain, board: wet ? 'RAIN' : 'DRY', drivers: [], text: wet ? 'Rain reported at the track.' : 'Rain has stopped.' });
     }
   }
 
@@ -347,10 +347,15 @@ function renderCalls(t) {
         badge = `<span class="outcome ${p.status}">${p.status === 'hit' ? '✓ ' : p.status === 'miss' ? '✗ ' : ''}${p.note}</span>`;
       } else badge = '<span class="outcome pending">Watching</span>';
     }
+    const open = p && !(p.resolvedAt != null && p.resolvedAt <= t); // a prediction still in play
+    const word = (c.board || '').length > 3;
     return `<li class="call ${c.minor ? 'minor' : ''} ${mine ? 'mine' : ''} ${c.id >= fresh ? 'fresh' : ''}" data-id="${c.id}"
         style="${mine ? `--mc:${d.drivers.get(sel).colour}` : ''}">
-      <div class="call-meta"><span class="call-type ${c.type}">${CALL_LABEL[c.type]}</span><span>Lap ${c.lap}</span></div>
-      <div class="call-text">${c.text}</div>${badge}</li>`;
+      <span class="pitboard call-pb${open ? ' open' : ''}${word ? ' word' : ''}" aria-hidden="true">${esc(c.board || '')}</span>
+      <div class="call-body">
+        <div class="call-meta"><span class="call-type ${c.type}">${CALL_LABEL[c.type]}</span><span>Lap ${c.lap}</span></div>
+        <div class="call-text">${c.text}</div>${badge}
+      </div></li>`;
   }).join('') || `<li class="empty">${onlyMine ? 'Nothing yet involving your drivers.' : 'Calls appear here as the race unfolds.'}</li>`;
   state.callsSeen = (visible[0]?.id ?? -1) + 1;
 }

@@ -69,79 +69,105 @@ function weekendOfSession(key) {
   return allWeekends().find((w) => w.sessions.some((s) => String(s.key) === String(key)));
 }
 function sesLabel(s) { return SES_SHORT[s.name] || s.name; }
-const lbWhen = (iso) => `${RACE_FMT.day.format(new Date(iso))} · ${RACE_FMT.time.format(new Date(iso))}`;
+const LB_WEEKDAY = new Intl.DateTimeFormat('en-GB', { weekday: 'short' });
+const LB_WEEKDAY_LONG = new Intl.DateTimeFormat('en-GB', { weekday: 'long' });
+const lbWhen = (iso) => `${RACE_FMT.day.format(new Date(iso))}, ${RACE_FMT.time.format(new Date(iso))}`;
+const lbDayTime = (iso) => `${LB_WEEKDAY.format(new Date(iso))} ${RACE_FMT.time.format(new Date(iso))}`;
+// what a pit board would say: three letters for the event, short for the session
+const BOARD_SES = { 'Practice 1': 'FP1', 'Practice 2': 'FP2', 'Practice 3': 'FP3', Qualifying: 'QUALI', 'Sprint Qualifying': 'SQ', 'Sprint Shootout': 'SQ', Sprint: 'SPRINT', Race: 'RACE' };
+const evCode = (w, s) => (w?.country_code || (w?.location || s?.location || '').slice(0, 3)).toUpperCase();
+function boardCount(ms) {
+  if (ms <= 0) return 'NOW';
+  const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600);
+  const p = (x) => String(x).padStart(2, '0');
+  return d >= 1 ? `${d}D ${p(h)}H` : `${p(h)}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
+}
+// "today", "tomorrow", "on Friday", or a date further out
+function lbRelDay(iso) {
+  const a = new Date(); a.setHours(0, 0, 0, 0);
+  const b = new Date(iso); b.setHours(0, 0, 0, 0);
+  const k = Math.round((b - a) / 864e5);
+  return k === 0 ? 'today' : k === 1 ? 'tomorrow' : k < 7 ? `on ${LB_WEEKDAY_LONG.format(new Date(iso))}` : `on ${RACE_FMT.day.format(new Date(iso))}`;
+}
+
+function heroBoard(top, mid, big, cls = '', attrs = '') {
+  return `<div class="pitboard hero-pb" aria-hidden="true">
+    <div class="hp-row"><span>${esc(top[0])}</span><span class="hp-dim">${esc(top[1])}</span></div>
+    <div class="hp-row"><span>${esc(mid[0])}</span><span class="hp-dim">${esc(mid[1])}</span></div>
+    <div class="hp-big ${cls}" ${attrs}>${esc(big)}</div>
+  </div>`;
+}
 
 function heroLive(li) {
   const s = li.session, w = allWeekends().find((x) => x.meeting_key === s.meeting_key);
   const now = Date.now(), started = now >= Date.parse(s.date_start), ended = now > Date.parse(s.date_end);
-  const kicker = li.mode === 'sim' ? 'Simulated live' : ended ? 'Just finished · still live' : started ? 'Live now' : 'Starting soon · live tracking open';
-  return `<section class="hero is-live">
-    <div class="hero-main">
-      <span class="hero-kicker"><span class="dot"></span>${kicker}</span>
-      <h2>${esc(w?.name || s.location)}</h2>
-      <p class="hero-ses">${esc(s.session_name)} · ${esc(w?.circuit || s.location)}</p>
-      <p class="hero-when">${started ? `Started ${RACE_FMT.time.format(new Date(s.date_start))}` : `Starts ${lbWhen(s.date_start)}`} · ends ${RACE_FMT.time.format(new Date(s.date_end))} your time</p>
-    </div>
-    <div class="hero-act">
-      <button type="button" class="primary big" data-act="live">Watch live</button>
-      <small>Everything else on this page is a replay.</small>
+  const state = li.mode === 'sim' ? 'is running as a simulation' : ended ? 'has just finished and is still live here'
+    : started ? 'is on now' : 'starts soon, and live tracking is already open';
+  const when = started ? `Started at ${RACE_FMT.time.format(new Date(s.date_start))}` : `Starts at ${RACE_FMT.time.format(new Date(s.date_start))}`;
+  return `<section class="lb-hero is-live">
+    ${heroBoard([evCode(w, s), BOARD_SES[s.session_name] || s.session_name], [LB_WEEKDAY.format(new Date(s.date_start)).toUpperCase(), RACE_FMT.time.format(new Date(s.date_start))], 'LIVE', 'live')}
+    <div class="hero-copy">
+      <h1>${esc(w?.name || s.location)}</h1>
+      <p>${esc(s.session_name)} ${state}. ${when}, ends at ${RACE_FMT.time.format(new Date(s.date_end))} your time.</p>
+      <button type="button" class="btn-live" data-act="live">Watch live</button>
+      <p class="hero-note">Everything else on this page is a replay.</p>
     </div>
   </section>`;
 }
 
 function heroNext(n) {
-  if (!n) return `<section class="hero"><div class="hero-main"><span class="hero-kicker">Next live session</span><h2>Season over</h2><p class="hero-ses">Replays of every race are below.</p></div></section>`;
-  const { w, s } = n;
-  return `<section class="hero">
-    <div class="hero-main">
-      <span class="hero-kicker">Next live session</span>
-      <h2>${esc(w.name)}</h2>
-      <p class="hero-ses">${esc(s.name)} · ${esc(w.circuit || w.location)}</p>
-      <p class="hero-when">${lbWhen(s.start)} your time</p>
-    </div>
-    <div class="hero-act">
-      <b class="hero-count" data-countdown="${s.start}">${countdown(Date.parse(s.start) - Date.now())}</b>
-      <small>Watch live opens here 30 minutes before the start.</small>
-      <button type="button" data-act="cal" data-mk="${w.meeting_key}">Add the weekend to my calendar</button>
+  if (!n) {
+    return `<section class="lb-hero">
+      ${heroBoard(['SEASON', ''], ['OVER', ''], 'FIN')}
+      <div class="hero-copy"><h1>That's the season</h1><p>Every race is below as a replay. The next live session shows up here once next year's calendar is out.</p></div>
+    </section>`;
+  }
+  const { w, s } = n, ms = Date.parse(s.start) - Date.now();
+  return `<section class="lb-hero">
+    ${heroBoard([evCode(w), BOARD_SES[s.name] || s.name], [LB_WEEKDAY.format(new Date(s.start)).toUpperCase(), RACE_FMT.time.format(new Date(s.start))],
+      boardCount(ms), 'count', `data-countdown="${s.start}" data-fmt="board"`)}
+    <div class="hero-copy">
+      <h1>${esc(w.name)}</h1>
+      <p>${esc(s.name)} goes live here ${lbRelDay(s.start)} at ${RACE_FMT.time.format(new Date(s.start))} your time. The track map, timing and race calls open 30 minutes before the start.</p>
+      <button type="button" class="btn-paint" data-act="cal" data-mk="${w.meeting_key}">Add the weekend to my calendar</button>
     </div>
   </section>`;
 }
 
-// the weekend that's on now (or next): each session as live / replay / upcoming
+// the weekend that's on now (or next), as a line of sessions in order
 function weekendStrip(w, li) {
   if (!w) return '';
   const now = Date.now();
+  const state = (s) => (li?.live && String(li.session?.session_key) === String(s.key) ? 'live' : sessionState(s, now));
+  const next = w.sessions.find((s) => state(s) === 'upcoming');
   const items = w.sessions.map((s) => {
+    const st = state(s);
     const isLive = li?.live && String(li.session?.session_key) === String(s.key);
-    const st = isLive ? 'live' : sessionState(s, now);
-    let act;
-    if (st === 'live') act = isLive ? '<button type="button" class="tag tag-live" data-act="live"><span class="dot"></span>Watch live</button>' : '<span class="tag tag-live"><span class="dot"></span>Live</span>';
-    else if (st === 'done') act = hasReplay(s.key) ? `<button type="button" class="tag tag-replay" data-replay="${s.key}">▶ Replay</button>` : '<span class="tag">No replay</span>';
-    else if (st === 'cancelled') act = '<span class="tag">Cancelled</span>';
-    else act = `<span class="tag tag-up" data-countdown="${s.start}">${countdown(Date.parse(s.start) - now)}</span>`;
-    return `<li class="wk-ses ${st}"><span class="wk-name">${esc(sesLabel(s))}</span><span class="wk-when">${lbWhen(s.start)}</span>${act}</li>`;
+    let act = '';
+    if (st === 'live') act = isLive ? '<button type="button" class="btn-live sm" data-act="live">Watch live</button>' : '<span class="wk-live">Live now</span>';
+    else if (st === 'done') act = hasReplay(s.key) ? `<button type="button" class="link" data-replay="${s.key}">Watch the replay</button>` : '<span class="wk-st">No replay</span>';
+    else if (st === 'cancelled') act = '<span class="wk-st">Cancelled</span>';
+    else if (s === next) act = `<span class="wk-st" data-countdown="${s.start}">${countdown(Date.parse(s.start) - now)}</span>`;
+    return `<li class="wk-s ${st}${s === next ? ' next' : ''}"><b>${esc(s.name)}</b><span class="wk-when">${lbDayTime(s.start)}</span>${act}</li>`;
   }).join('');
-  return `<section class="wk"><h3 class="lb-h3">${esc(w.name)} weekend</h3><ol class="wk-list">${items}</ol></section>`;
+  return `<section class="wk"><h2 class="lb-h2">${esc(w.name)} weekend</h2><ol class="wk-line">${items}</ol></section>`;
 }
 
-function replayCard(w) {
+// one row per round, like a results sheet
+function replayRow(w) {
   const saved = w.sessions.filter((s) => hasReplay(s.key));
   const race = w.sessions.find((s) => s.name === 'Race');
-  const pod = w.podium ? `<ol class="podium">${w.podium.map((c, i) => `<li><span>P${i + 1}</span>${esc(c)}</li>`).join('')}</ol>` : '';
   const main = saved.find((s) => s.name === 'Race');
   const extra = saved.filter((s) => s !== main);
-  return `<article class="rp-card ${main ? '' : 'no-race'}">
-    <header>
-      <span class="rc-round">${w.round ? 'R' + w.round : '–'}</span>
-      <span class="rc-main"><b>${esc(w.name)}</b><small>${esc(w.location)} · ${RACE_FMT.date.format(new Date(race?.start || w.start))}</small></span>
-      <span class="tag tag-replay-static">Replay</span>
-    </header>
-    ${pod}
-    <div class="rp-btns">
-      ${main ? `<button type="button" class="rp-main" data-replay="${main.key}">▶ Watch the race</button>` : '<span class="muted small">Race not downloaded yet</span>'}
-      ${extra.map((s) => `<button type="button" data-replay="${s.key}">${esc(sesLabel(s))}</button>`).join('')}
-    </div>
-  </article>`;
+  const pod = (w.podium || []).map((c, i) => `<span><em>${i + 1}</em>${esc(c)}</span>`).join('');
+  return `<tr class="${main ? '' : 'no-race'}">
+    <td class="rp-r">${w.round ? 'R' + w.round : ''}</td>
+    <td class="rp-gp"><b>${esc(w.name)}</b><small>${esc(w.location)}, ${RACE_FMT.date.format(new Date(race?.start || w.start))}</small></td>
+    <td class="rp-pod">${pod}</td>
+    <td class="rp-act">${extra.map((s) => `<button type="button" class="link" data-replay="${s.key}">${esc(sesLabel(s))}</button>`).join('')}${main
+      ? `<button type="button" class="btn-paint sm" data-replay="${main.key}">Watch the race</button>`
+      : '<span class="wk-st">Race not downloaded yet</span>'}</td>
+  </tr>`;
 }
 
 function renderLobbyRaces() {
@@ -154,20 +180,21 @@ function renderLobbyRaces() {
   const done = (races.cal?.years[y] || []).filter((w) => !w.cancelled && w.sessions.some((s) => s.name === 'Race' && Date.parse(s.end) < now))
     .sort((a, b) => Date.parse(b.start) - Date.parse(a.start));
   document.querySelector('#lobby-races').innerHTML = `
-    <div class="hero-row">
+    <div class="hero-wrap">
       ${li ? heroLive(li) : heroNext(n)}
-      <section class="pv-card" aria-label="One lap of the latest race">
+      <section class="lb-preview" aria-label="One lap of the latest race">
         <canvas id="pv-map"></canvas>
-        <div class="pv-foot"><span id="pv-label" class="muted small">Latest race</span><button type="button" id="pv-watch" class="rp-main">▶ Watch the replay</button></div>
+        <div class="pv-foot"><span id="pv-label">Latest race</span><button type="button" id="pv-watch" class="btn-quiet sm">Watch the replay</button></div>
       </section>
     </div>
     ${weekendStrip(wkNow, li)}
     <section class="rp">
       <div class="rp-head">
-        <h3 class="lb-h3">Replays <span class="lb-sub-inline">finished sessions, played back as they happened</span></h3>
-        <div class="side-tabs lb-years" role="tablist">${years.map((k) => `<button type="button" role="tab" data-year="${k}" class="${k === y ? 'on' : ''}" aria-selected="${k === y}">${k}</button>`).join('')}</div>
+        <h2 class="lb-h2">Replays <span class="lb-sub-inline">Finished sessions, played back as they happened</span></h2>
+        <div class="lb-years" role="tablist" aria-label="Season">${years.map((k) => `<button type="button" role="tab" data-year="${k}" class="${k === y ? 'on' : ''}" aria-selected="${k === y}">${k}</button>`).join('')}</div>
       </div>
-      <div class="rp-grid">${done.map(replayCard).join('') || '<p class="muted">No finished races this season yet.</p>'}</div>
+      <table class="rp-sheet"><caption class="sr-only">Finished races in ${y}, newest first</caption><tbody>${done.map(replayRow).join('')}</tbody></table>
+      ${done.length ? '' : '<p class="muted">No finished races this season yet.</p>'}
     </section>`;
   if (typeof startPreview === 'function') startPreview();
 }
@@ -228,7 +255,7 @@ function renderPU() {
   const example = ex ? `For example, at the ${esc(ex.event)} ${esc(ex.driver)} fitted ${ex.elements.map((x) => `a ${puOrd(x.nth)} ${esc(PU_PROSE[x.elem] || x.elem)}`).join(' and ')} with only ${ex.elements.map((x) => L[x.elem]).filter((v, i, a) => a.indexOf(v) === i).join(' or ')} allowed: <b>${esc(ex.decision.replace(/ (for|in) the next Race.*$/i, '').toLowerCase())}</b>.` : '';
   box.innerHTML = `
     <section class="lb-intro">
-      <h2>Power units · ${P.season}</h2>
+      <h2>Power units in ${P.season}</h2>
       <p>Every driver gets a fixed number of each engine part for the season. Going over costs grid places: <b>10 places</b> the first time a driver exceeds the allowance for a part, <b>5 places</b> for each one after that. ${example}</p>
       <div class="pu-limits">${O.map((e) => `<span title="${esc(P.names[e])}"><b>${L[e]}</b> ${esc(PU_SHORT[e])}</span>`).join('')}<em>allowed per driver, per season</em></div>
     </section>
@@ -293,7 +320,7 @@ function renderLobby() {
     if (!inLobby()) return;
     box.querySelectorAll('[data-countdown]').forEach((b) => {
       const ms = Date.parse(b.dataset.countdown) - Date.now();
-      b.textContent = ms > 0 ? countdown(ms) : 'starting';
+      b.textContent = b.dataset.fmt === 'board' ? boardCount(ms) : ms > 0 ? countdown(ms) : 'starting';
     });
     const nowLive = !!window.liveInfo?.live;
     if (lobby.tab === 'races' && nowLive !== lastLive) { lastLive = nowLive; renderLobbyRaces(); }
