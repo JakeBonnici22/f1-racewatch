@@ -13,7 +13,7 @@
   --board-edge: #2a3546;
   --signal: #5fe3b0;    /* mint: the number to watch on a board, and keyboard focus */
   --lights: #ff3b30;    /* live, and nothing else */
-  --green: #3ecf7e;
+  --green: #a6d65a;    /* green flag, came true, personal best: yellow-green, apart from mint */
   --yellow: #f2c230;    /* yellow flag / safety car */
   --red: #e5484d;       /* red flag, over a limit, lost places */
   --purple: #a970ff;
@@ -77,7 +77,7 @@ select:hover, button:hover { border-color: var(--line); }
   background: var(--pitlane); color: var(--fog); transition: background .3s, color .3s;
 }
 .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.status.GREEN { background: rgba(52,194,122,.14); color: var(--green); }
+.status.GREEN { background: rgba(166,214,90,.14); color: var(--green); }
 .status.SC, .status.SC_IN, .status.VSC, .status.VSC_END { background: var(--yellow); color: #231b00; }
 .status.SC::before, .status.VSC::before { animation: blink 1s steps(2) infinite; }
 .status.RED { background: var(--red); color: #fff; }
@@ -215,7 +215,7 @@ body.compact .drv b { font-size: 13px; }
 .call-type.stewards { color: #ff9a7a; }
 .call-text { font-size: 13px; line-height: 1.4; }
 .outcome { display: inline-block; margin-top: 6px; font-size: 11.5px; padding: 1px 8px; border-radius: var(--r-pill); background: var(--pitlane); color: var(--fog); }
-.outcome.hit { background: rgba(52,194,122,.14); color: var(--green); }
+.outcome.hit { background: rgba(166,214,90,.14); color: var(--green); }
 .outcome.miss { background: rgba(229,72,77,.14); color: #ff7f83; }
 .outcome.pending::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--fog); margin-right: 6px; vertical-align: 1px; animation: blink 1.2s steps(2) infinite; }
 #calls .empty { color: var(--fog); padding: 10px 6px; }
@@ -326,7 +326,7 @@ tr:hover .drv .team { visibility: hidden; }
 .stats.vert { grid-template-columns: 1fr; gap: 10px; }
 .label { color: var(--fog); font-size: 12px; }
 .chip { font-size: 10.5px; font-weight: 700; padding: 0 7px; border-radius: var(--r-pill); margin-left: 6px; line-height: 17px; display: inline-block; vertical-align: 3px; }
-.chip.drs, .chip.ok { background: rgba(52,194,122,.16); color: var(--green); }
+.chip.drs, .chip.ok { background: rgba(166,214,90,.16); color: var(--green); }
 .chip.warn { background: rgba(242,194,48,.16); color: var(--yellow); }
 .chart { width: 100%; max-width: 400px; height: auto; display: block; margin: 4px 0 6px; }
 .chart .ax { fill: var(--dim); font-size: 9px; font-family: 'Archivo', system-ui, sans-serif; }
@@ -989,3 +989,30 @@ button.race-card:hover { background: var(--pitlane); border-color: transparent; 
 .archive-years button { flex: none; }
 /* timing board: a touch narrower than body text, like a timing tower */
 .board table { font-stretch: 88%; }
+
+/* lobby: a bigger lap of the last race */
+#pv-map { height: 290px; }
+
+/* analysis cards stack on narrower laptops instead of scrolling sideways */
+@media (max-width: 1360px) {
+  .analysis .cards { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .ribbon-head { flex-wrap: wrap; row-gap: 0; }
+  .ribbon-head h2 { white-space: nowrap; }
+  .ribbon-head .follow-hint { display: none; }
+}
+
+/* phones: tabs under the map pick race calls (default), timing or analysis */
+.phone-tabs { display: none; }
+@media (max-width: 760px) {
+  #pv-map { height: 230px; }
+  .phone-tabs {
+    display: flex; order: -1; gap: 2px; padding: 3px; position: sticky; top: 0; z-index: 25;
+    background: var(--kerb); border-radius: var(--r-md); box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+  }
+  .phone-tabs button { flex: 1; padding: 9px 6px; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--fog); font-weight: 600; font-size: 14px; }
+  .phone-tabs button.on { background: var(--pitlane); color: var(--chalk); }
+  .board, .analysis, .side { order: 0; }
+  body:not(.pt-timing) .board, body:not(.pt-analysis) .analysis, body.pt-timing .side, body.pt-analysis .side { display: none; }
+  .side { max-height: none; min-height: 50vh; }
+  .c-stops, .board th.th-add, .board td.td-add { display: none; }
+}

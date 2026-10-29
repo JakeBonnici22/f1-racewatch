@@ -146,6 +146,23 @@ function drawPreview(cv, f) {
   }
 }
 
+// ---------- phones: one of race calls, timing or analysis under the map ----------
+(function phoneTabs() {
+  const nav = document.querySelector('#phone-tabs');
+  if (!nav) return;
+  const pick = (k) => {
+    document.body.classList.remove('pt-calls', 'pt-timing', 'pt-analysis');
+    document.body.classList.add(`pt-${k}`);
+    for (const b of nav.querySelectorAll('button')) {
+      b.classList.toggle('on', b.dataset.pt === k);
+      b.setAttribute('aria-pressed', String(b.dataset.pt === k));
+    }
+    dispatchEvent(new Event('resize')); // charts size themselves when they become visible
+  };
+  nav.addEventListener('click', (e) => { const b = e.target.closest('button[data-pt]'); if (b) pick(b.dataset.pt); });
+  pick('calls');
+})();
+
 (function wireExtras() {
   document.querySelector('#share-btn')?.addEventListener('click', shareMoment);
   document.addEventListener('click', (e) => {

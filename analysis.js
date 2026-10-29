@@ -249,7 +249,7 @@ function drawRibbon(d, t, field, ghost) {
   // DRS links between consecutive cars
   for (let i = 1; i < pts.length; i++) {
     if (pts[i].gap - pts[i - 1].gap < 1) {
-      rctx.fillStyle = '#34c27a';
+      rctx.fillStyle = '#a6d65a';
       rctx.fillRect(x(pts[i - 1].gap), axisY - 2, Math.max(2, x(pts[i].gap) - x(pts[i - 1].gap)), 3);
     }
   }

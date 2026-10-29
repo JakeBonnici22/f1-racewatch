@@ -11,7 +11,7 @@ const TYRES = {
   INTERMEDIATE: ['I', '#43b02a'], WET: ['W', '#2b7bff'],
 };
 const STATUS = {
-  PRE: ['Pre-race', '#26303f'], GREEN: ['Green flag', '#34c27a'],
+  PRE: ['Pre-race', '#26303f'], GREEN: ['Green flag', '#a6d65a'],
   SC: ['Safety car', '#f2c230'], SC_IN: ['Safety car in this lap', '#f2c230'],
   VSC: ['Virtual safety car', '#f2c230'], VSC_END: ['VSC ending', '#f2c230'],
   RED: ['Red flag', '#e5484d'], FINISH: ['Chequered flag', '#e4e9f0'],
@@ -348,7 +348,7 @@ function rcColour(r) {
   const f = (r.flag || '').toUpperCase(), m = (r.message || '').toUpperCase();
   if (f === 'RED') return '#e5484d';
   if (f.includes('YELLOW') || r.category === 'SafetyCar') return '#f2c230';
-  if (f === 'GREEN' || f === 'CLEAR') return '#34c27a';
+  if (f === 'GREEN' || f === 'CLEAR') return '#a6d65a';
   if (f === 'CHEQUERED') return '#e4e9f0';
   if (f === 'BLACK AND WHITE' || m.includes('PENALTY') || m.includes('INVESTIGAT')) return '#a970ff';
   return '#6f7b8d';
@@ -516,6 +516,7 @@ function drawMap(t, board) {
   const order = (board || []).slice().reverse();
   order.sort((a, b) => ((a.n === sel || a.n === cmp) - (b.n === sel || b.n === cmp)));
   state.carScreen = [];
+  const thinLabels = matchMedia('(max-width: 760px)').matches; // phones: names would pile up
   for (const r of order) {
     const p = pos.get(r.n);
     if (!p) continue;
@@ -552,9 +553,11 @@ function drawMap(t, board) {
       ctx.beginPath(); ctx.arc(px, py, rad + 4.5, 0, Math.PI * 2);
       ctx.lineWidth = 2; ctx.strokeStyle = '#e4e9f0'; ctx.stroke(); ctx.setLineDash([]);
     }
-    ctx.font = `${on ? 700 : 600} ${on ? 13 : 11}px Archivo, system-ui, sans-serif`;
-    const label = down > 0 ? `${r.drv.code} +${down}L` : r.drv.code;
-    halo(px + rad + (on ? 6 : 4), py - (on ? 9 : 7), label, on ? '#ffffff' : down > 0 ? '#8b97a8' : '#c3cbd6');
+    if (!thinLabels || on || place === 1) {
+      ctx.font = `${on ? 700 : 600} ${on ? 13 : 11}px Archivo, system-ui, sans-serif`;
+      const label = down > 0 ? `${r.drv.code} +${down}L` : r.drv.code;
+      halo(px + rad + (on ? 6 : 4), py - (on ? 9 : 7), label, on ? '#ffffff' : down > 0 ? '#8b97a8' : '#c3cbd6');
+    }
     ctx.globalAlpha = 1;
   }
 

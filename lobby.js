@@ -182,10 +182,10 @@ function renderLobbyRaces() {
   document.querySelector('#lobby-races').innerHTML = `
     <div class="hero-wrap">
       ${li ? heroLive(li) : heroNext(n)}
-      <section class="lb-preview" aria-label="One lap of the latest race">
+      ${li ? '' : `<section class="lb-preview" aria-label="One lap of the latest race">
         <canvas id="pv-map"></canvas>
         <div class="pv-foot"><span id="pv-label">Latest race</span><button type="button" id="pv-watch" class="btn-quiet sm">Watch the replay</button></div>
-      </section>
+      </section>`}
     </div>
     ${weekendStrip(wkNow, li)}
     <section class="rp">
