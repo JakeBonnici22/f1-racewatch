@@ -832,7 +832,7 @@ button.link:hover { color: var(--chalk); text-decoration-color: var(--fog); bord
 .call-pb.open { color: var(--signal); }
 .call-body { min-width: 0; }
 .call-meta { font-stretch: 94%; }
-.call-type.battle, .call-type.strategy, .call-type.status, .call-type.stewards { color: var(--chalk); }
+.call-type.battle, .call-type.strategy, .call-type.status, .call-type.stewards { color: var(--chalk); padding: 0; }
 .call.minor { padding-top: 7px; padding-bottom: 7px; background: transparent; }
 .call.minor .call-pb { height: 28px; font-size: 15px; width: 40px; justify-self: end; box-shadow: 0 0 0 1px #30353a; }
 .call.minor .call-pb.word { font-size: 10px; }
