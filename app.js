@@ -11,10 +11,10 @@ const TYRES = {
   INTERMEDIATE: ['I', '#43b02a'], WET: ['W', '#2b7bff'],
 };
 const STATUS = {
-  PRE: ['Pre-race', '#34393e'], GREEN: ['Green flag', '#34c27a'],
+  PRE: ['Pre-race', '#26303f'], GREEN: ['Green flag', '#34c27a'],
   SC: ['Safety car', '#f2c230'], SC_IN: ['Safety car in this lap', '#f2c230'],
   VSC: ['Virtual safety car', '#f2c230'], VSC_END: ['VSC ending', '#f2c230'],
-  RED: ['Red flag', '#e5484d'], FINISH: ['Chequered flag', '#eeede6'],
+  RED: ['Red flag', '#e5484d'], FINISH: ['Chequered flag', '#e4e9f0'],
 };
 const OUT_AFTER_MS = 30_000; // no location sample for this long = car is out
 
@@ -349,9 +349,9 @@ function rcColour(r) {
   if (f === 'RED') return '#e5484d';
   if (f.includes('YELLOW') || r.category === 'SafetyCar') return '#f2c230';
   if (f === 'GREEN' || f === 'CLEAR') return '#34c27a';
-  if (f === 'CHEQUERED') return '#eeede6';
+  if (f === 'CHEQUERED') return '#e4e9f0';
   if (f === 'BLACK AND WHITE' || m.includes('PENALTY') || m.includes('INVESTIGAT')) return '#a970ff';
-  return '#646b70';
+  return '#6f7b8d';
 }
 
 // Race control shouts in capitals; sentence case reads faster, but driver
@@ -444,7 +444,7 @@ function project(x, y) {
 // dark text on light team colours (Haas white, McLaren papaya), light on dark
 function inkFor(hex) {
   const v = parseInt(hex.slice(1), 16), r = v >> 16, g = (v >> 8) & 255, b = v & 255;
-  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#16191c' : '#ffffff';
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#121821' : '#ffffff';
 }
 // laps behind the leader, from the timing feed ("+1 LAP") or lap counts
 function lapsDown(r, leader) {
@@ -453,7 +453,7 @@ function lapsDown(r, leader) {
   // for a moment each time the leader crosses the line
   return m ? Number(m[1]) : 0;
 }
-function halo(px, py, label, fill, stroke = '#16191c') {
+function halo(px, py, label, fill, stroke = '#121821') {
   ctx.lineWidth = 3.5; ctx.strokeStyle = stroke; ctx.strokeText(label, px, py);
   ctx.fillStyle = fill; ctx.fillText(label, px, py);
 }
@@ -472,15 +472,15 @@ function drawMap(t, board) {
   d.track.forEach(([x, y], i) => { const [px, py] = project(x, y); i ? path.lineTo(px, py) : path.moveTo(px, py); });
   path.closePath();
   const neutral = status === 'SC' || status === 'VSC' || status === 'SC_IN' || status === 'VSC_END';
-  ctx.strokeStyle = neutral ? 'rgba(242,194,48,.35)' : status === 'RED' ? 'rgba(229,72,77,.4)' : '#2a2e32';
+  ctx.strokeStyle = neutral ? 'rgba(242,194,48,.35)' : status === 'RED' ? 'rgba(229,72,77,.4)' : '#1f2836';
   ctx.lineWidth = 20; ctx.stroke(path);
-  ctx.strokeStyle = '#3b4146'; ctx.lineWidth = 11; ctx.stroke(path);
+  ctx.strokeStyle = '#2f3a4b'; ctx.lineWidth = 11; ctx.stroke(path);
 
   // start/finish
   const [sx, sy] = project(...d.track[0]);
   const [nx, ny] = project(...d.track[Math.min(4, d.track.length - 1)]);
   const ang = Math.atan2(ny - sy, nx - sx) + Math.PI / 2;
-  ctx.strokeStyle = '#eeede6'; ctx.lineWidth = 3;
+  ctx.strokeStyle = '#e4e9f0'; ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(sx - Math.cos(ang) * 12, sy - Math.sin(ang) * 12);
   ctx.lineTo(sx + Math.cos(ang) * 12, sy + Math.sin(ang) * 12);
@@ -498,13 +498,13 @@ function drawMap(t, board) {
   // battle line between the followed car and the compared one, labelled with the gap
   if (sel != null && cmp != null && pos.has(sel) && pos.has(cmp)) {
     const [ax, ay] = pos.get(sel), [bx, by] = pos.get(cmp);
-    ctx.setLineDash([2, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(238,237,230,.55)';
+    ctx.setLineDash([2, 5]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(228,233,240,.55)';
     ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]);
     const ga = typeof gapAt === 'function' ? gapAt(d, sel, t) : null;
     const gb = typeof gapAt === 'function' ? gapAt(d, cmp, t) : null;
     if (ga != null && gb != null) {
       ctx.font = '600 12px Archivo, system-ui, sans-serif'; ctx.textAlign = 'center';
-      halo((ax + bx) / 2, (ay + by) / 2 - 6, `${Math.abs(gb - ga).toFixed(1)}s`, '#eeede6');
+      halo((ax + bx) / 2, (ay + by) / 2 - 6, `${Math.abs(gb - ga).toFixed(1)}s`, '#e4e9f0');
       ctx.textAlign = 'left';
     }
   }
@@ -536,10 +536,10 @@ function drawMap(t, board) {
     const rad = on ? 10.5 : 8.5;
     ctx.beginPath(); ctx.arc(px, py, rad, 0, Math.PI * 2);
     ctx.fillStyle = r.drv.colour; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = '#16191c'; ctx.stroke();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#121821'; ctx.stroke();
     if (down > 0) {
       ctx.setLineDash([2, 2]); ctx.beginPath(); ctx.arc(px, py, rad + 2.5, 0, Math.PI * 2);
-      ctx.lineWidth = 1.5; ctx.strokeStyle = '#8f969b'; ctx.stroke(); ctx.setLineDash([]);
+      ctx.lineWidth = 1.5; ctx.strokeStyle = '#8b97a8'; ctx.stroke(); ctx.setLineDash([]);
     }
     if (place) {
       ctx.font = `700 ${place > 9 ? 9.5 : 10.5}px Archivo, system-ui, sans-serif`;
@@ -550,11 +550,11 @@ function drawMap(t, board) {
     if (on) {
       if (isCmp) ctx.setLineDash([3, 3]);
       ctx.beginPath(); ctx.arc(px, py, rad + 4.5, 0, Math.PI * 2);
-      ctx.lineWidth = 2; ctx.strokeStyle = '#eeede6'; ctx.stroke(); ctx.setLineDash([]);
+      ctx.lineWidth = 2; ctx.strokeStyle = '#e4e9f0'; ctx.stroke(); ctx.setLineDash([]);
     }
     ctx.font = `${on ? 700 : 600} ${on ? 13 : 11}px Archivo, system-ui, sans-serif`;
     const label = down > 0 ? `${r.drv.code} +${down}L` : r.drv.code;
-    halo(px + rad + (on ? 6 : 4), py - (on ? 9 : 7), label, on ? '#ffffff' : down > 0 ? '#8f969b' : '#c9cbc6');
+    halo(px + rad + (on ? 6 : 4), py - (on ? 9 : 7), label, on ? '#ffffff' : down > 0 ? '#8b97a8' : '#c3cbd6');
     ctx.globalAlpha = 1;
   }
 
@@ -568,7 +568,7 @@ function drawMap(t, board) {
       ctx.setLineDash([3, 3]); ctx.lineWidth = 2; ctx.strokeStyle = d.drivers.get(sel).colour;
       ctx.beginPath(); ctx.arc(px, py, 8.5, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
       ctx.font = '600 11px Archivo, system-ui, sans-serif';
-      halo(px + 13, py + 15, `${d.drivers.get(sel).code} after a stop`, '#eeede6');
+      halo(px + 13, py + 15, `${d.drivers.get(sel).code} after a stop`, '#e4e9f0');
     }
   }
 

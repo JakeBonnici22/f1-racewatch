@@ -127,7 +127,7 @@ function drawPreview(cv, f) {
   const P = (x, y) => [v.ox + (x * v.c - y * v.s) * v.scale, v.oy - (x * v.s + y * v.c) * v.scale];
   ctx.clearRect(0, 0, w, h);
   ctx.lineJoin = ctx.lineCap = 'round';
-  ctx.strokeStyle = '#3b4146'; ctx.lineWidth = 9;
+  ctx.strokeStyle = '#2f3a4b'; ctx.lineWidth = 9;
   ctx.beginPath();
   p.trackPts.forEach(([x, y], i) => { const [sx, sy] = P(x, y); if (i) ctx.lineTo(sx, sy); else ctx.moveTo(sx, sy); });
   ctx.stroke();
@@ -139,7 +139,7 @@ function drawPreview(cv, f) {
     ctx.fillStyle = `#${c.colour}`;
     ctx.beginPath(); ctx.arc(sx, sy, 4.5, 0, Math.PI * 2); ctx.fill();
     if (ci < 3) { // name the top three; flip the label to the left near the right edge
-      ctx.fillStyle = '#eeede6'; ctx.font = '600 11px Archivo, system-ui, sans-serif';
+      ctx.fillStyle = '#e4e9f0'; ctx.font = '600 11px Archivo, system-ui, sans-serif';
       const tw = ctx.measureText(c.code).width;
       ctx.fillText(c.code, sx + 7 + tw > w - 2 ? sx - 7 - tw : sx + 7, sy - 6);
     }

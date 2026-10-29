@@ -80,7 +80,7 @@ function boardCount(ms) {
   if (ms <= 0) return 'NOW';
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600);
   const p = (x) => String(x).padStart(2, '0');
-  return d >= 1 ? `${d}D ${p(h)}H` : `${p(h)}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
+  return d >= 1 ? `${d}<small>d</small>${p(h)}<small>h</small>` : `${p(h)}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
 }
 // "today", "tomorrow", "on Friday", or a date further out
 function lbRelDay(iso) {
@@ -94,7 +94,7 @@ function heroBoard(top, mid, big, cls = '', attrs = '') {
   return `<div class="pitboard hero-pb" aria-hidden="true">
     <div class="hp-row"><span>${esc(top[0])}</span><span class="hp-dim">${esc(top[1])}</span></div>
     <div class="hp-row"><span>${esc(mid[0])}</span><span class="hp-dim">${esc(mid[1])}</span></div>
-    <div class="hp-big ${cls}" ${attrs}>${esc(big)}</div>
+    <div class="hp-big ${cls}" ${attrs}>${big}</div>
   </div>`;
 }
 
@@ -320,7 +320,7 @@ function renderLobby() {
     if (!inLobby()) return;
     box.querySelectorAll('[data-countdown]').forEach((b) => {
       const ms = Date.parse(b.dataset.countdown) - Date.now();
-      b.textContent = b.dataset.fmt === 'board' ? boardCount(ms) : ms > 0 ? countdown(ms) : 'starting';
+      if (b.dataset.fmt === 'board') b.innerHTML = boardCount(ms); else b.textContent = ms > 0 ? countdown(ms) : 'starting';
     });
     const nowLive = !!window.liveInfo?.live;
     if (lobby.tab === 'races' && nowLive !== lastLive) { lastLive = nowLive; renderLobbyRaces(); }

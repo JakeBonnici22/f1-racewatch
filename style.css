@@ -1,28 +1,29 @@
-/* Race Watch: asphalt and track paint, and one pit board per call.
-   Saturated colour is data (teams, tyres, flags); signal yellow marks the number
-   to watch on a pit board; lights red means live and nothing else. */
+/* Race Watch: night slate, and one pit board per call.
+   Saturated colour is data (teams, tyres, flags); mint marks the number to watch
+   on a board; lights red means live and nothing else. */
 :root {
-  --asphalt: #1c1f22;   /* page */
-  --kerb: #212528;      /* panels */
-  --pitlane: #2a2e32;   /* raised: hover, inputs */
-  --line: #34393e;      /* painted lines between things */
-  --chalk: #eeede6;     /* track paint: text */
-  --fog: #8f969b;       /* concrete: secondary text */
-  --dim: #788085;       /* tertiary */
-  --board: #000;        /* pit boards only */
-  --signal: #ffd000;    /* the number to watch on a pit board, and keyboard focus */
-  --lights: #ff2e1f;    /* live, and nothing else */
-  --green: #34c27a;
+  --asphalt: #121821;   /* page: night slate */
+  --kerb: #1a2230;      /* panels */
+  --pitlane: #222c3c;   /* raised: hover, inputs */
+  --line: #26303f;      /* lines between things */
+  --chalk: #e4e9f0;     /* text */
+  --fog: #8b97a8;       /* secondary text */
+  --dim: #6f7b8d;       /* tertiary */
+  --board: #161e2a;     /* pit boards */
+  --board-edge: #2a3546;
+  --signal: #5fe3b0;    /* mint: the number to watch on a board, and keyboard focus */
+  --lights: #ff3b30;    /* live, and nothing else */
+  --green: #3ecf7e;
   --yellow: #f2c230;    /* yellow flag / safety car */
   --red: #e5484d;       /* red flag, over a limit, lost places */
   --purple: #a970ff;
   --fc: var(--chalk);   /* focus driver's team colour, set by JS */
   --cc: var(--fog);     /* compared driver's team colour, set by JS */
   --ease: cubic-bezier(.2, .8, .2, 1);
-  --r-lg: 6px;
-  --r-md: 4px;
-  --r-sm: 3px;
-  --r-pill: 3px;
+  --r-lg: 8px;
+  --r-md: 6px;
+  --r-sm: 4px;
+  --r-pill: 6px;
 }
 
 * { box-sizing: border-box; }
@@ -595,7 +596,7 @@ body.is-quali .map-wrap { grid-row: 1 / span 2; }
 .sr.out { opacity: .4; }
 .sr-name { font-size: 11.5px; font-weight: 700; padding-left: 8px; box-shadow: inset 3px 0 0 var(--c, transparent); }
 .sr-track { position: relative; height: 11px; background: color-mix(in srgb, var(--line) 45%, transparent); border-radius: 3px; }
-.st { position: absolute; top: 0; height: 11px; background: var(--c); border-radius: 3px; box-shadow: 0 0 0 1px var(--kerb); display: flex; align-items: center; gap: 4px; padding-left: 4px; overflow: hidden; font-style: normal; color: #12161d; font-size: 9.5px; line-height: 1; }
+.st { position: absolute; top: 0; height: 11px; background: var(--c); border-radius: 3px; box-shadow: 0 0 0 1px var(--kerb); display: flex; align-items: center; gap: 4px; padding-left: 4px; overflow: hidden; font-style: normal; color: #121821; font-size: 9.5px; line-height: 1; }
 .st.used { background: repeating-linear-gradient(135deg, var(--c) 0 3px, color-mix(in srgb, var(--c) 70%, #000) 3px 5px); }
 .st.unsure { background: transparent; box-shadow: inset 0 0 0 1px var(--fog); color: var(--fog); }
 .st b { font-weight: 800; }
@@ -675,7 +676,7 @@ body.lobby-on { overflow: hidden; }
 .pu-limits b { color: var(--chalk); font-size: 16px; margin-right: 2px; }
 .pu-limits em { font-style: normal; color: var(--dim); font-size: 12px; }
 .pu-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 18px 0 8px; font-size: 12px; color: var(--fog); }
-.lg { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: #4a5566; }
+.lg { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: #3a4658; }
 .lg.full { background: var(--yellow); } .lg.over { background: var(--red); }
 .lg.fresh { background: none; box-shadow: inset 0 0 0 2px var(--chalk); border-radius: 50%; }
 .cc-scroll { overflow-x: auto; background: var(--kerb); border-radius: var(--r-md); }
@@ -694,7 +695,7 @@ td.pu { min-width: 82px; }
 .pu-n { display: inline-block; width: 18px; font-weight: 700; font-size: 14px; }
 .pips { display: inline-flex; gap: 2px; vertical-align: 1px; }
 .pips i { width: 7px; height: 11px; border-radius: 2px; background: var(--pitlane); }
-.pips i.u { background: #8d97a6; }
+.pips i.u { background: #8b97a8; }
 .pips i.x { background: var(--red); }
 td.pu.full .pips i.u { background: var(--yellow); }
 td.pu.full .pu-n { color: var(--yellow); }
@@ -798,12 +799,12 @@ td.pu.fresh .pu-n { box-shadow: 0 0 0 2px var(--chalk); border-radius: 50%; text
    ===================================================================== */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* the pit board: black face, a thin metal frame, extra-condensed figures */
+/* the pit board: a slate panel with one fine edge and condensed figures */
 .pitboard {
-  background: var(--board); color: var(--chalk); border-radius: var(--r-sm);
-  box-shadow: 0 0 0 2px #30353a, 0 0 0 3px var(--board);
-  font-family: 'Archivo', system-ui, sans-serif; font-weight: 800; font-stretch: 62%;
-  line-height: .92; letter-spacing: .01em; font-variant-numeric: tabular-nums;
+  background: var(--board); color: var(--chalk); border-radius: var(--r-lg);
+  border: 1px solid var(--board-edge);
+  font-family: 'Archivo', system-ui, sans-serif; font-weight: 700; font-stretch: 72%;
+  line-height: .95; font-variant-numeric: tabular-nums;
 }
 
 /* buttons: paint for the main action, lights red only to go live, quiet for the rest */
@@ -811,7 +812,7 @@ td.pu.fresh .pu-n { box-shadow: 0 0 0 2px var(--chalk); border-radius: 50%; text
 .btn-paint { background: var(--chalk); color: var(--asphalt); font-weight: 650; padding: 8px 14px; border-radius: var(--r-sm); border: 0; }
 .btn-paint:hover { background: #fff; border-color: transparent; }
 .btn-live { background: var(--lights); color: #fff; font-weight: 700; padding: 9px 18px; border-radius: var(--r-sm); border: 0; }
-.btn-live:hover { background: #ff4a3d; border-color: transparent; }
+.btn-live:hover { background: #ff5247; border-color: transparent; }
 .btn-quiet { background: transparent; color: var(--chalk); box-shadow: inset 0 0 0 1px var(--line); padding: 6px 12px; border-radius: var(--r-sm); border: 0; }
 .btn-quiet:hover { box-shadow: inset 0 0 0 1px var(--fog); }
 .btn-paint.sm, .btn-live.sm, .btn-quiet.sm { padding: 5px 11px; font-size: 12.5px; }
@@ -827,14 +828,14 @@ button.link:hover { color: var(--chalk); text-decoration-color: var(--fog); bord
 .call:first-child { border-top-color: transparent; }
 .call:hover { background: color-mix(in srgb, var(--pitlane) 60%, transparent); }
 .call.mine { box-shadow: inset 3px 0 0 var(--mc); }
-.call-pb { height: 46px; margin: 3px 0 0 3px; display: grid; place-items: center; font-size: 25px; }
+.call-pb { height: 46px; margin: 2px 0 0; border-radius: var(--r-md); display: grid; place-items: center; font-size: 25px; }
 .call-pb.word { font-size: 15px; }
 .call-pb.open { color: var(--signal); }
 .call-body { min-width: 0; }
 .call-meta { font-stretch: 94%; }
 .call-type.battle, .call-type.strategy, .call-type.status, .call-type.stewards { color: var(--chalk); padding: 0; }
 .call.minor { padding-top: 7px; padding-bottom: 7px; background: transparent; }
-.call.minor .call-pb { height: 28px; font-size: 15px; width: 40px; justify-self: end; box-shadow: 0 0 0 1px #30353a; }
+.call.minor .call-pb { height: 28px; font-size: 15px; width: 40px; justify-self: end; }
 .call.minor .call-pb.word { font-size: 10px; }
 .call.fresh { animation: none; }
 .call.fresh .call-pb { animation: board-out .5s var(--ease); transform-origin: 50% 0; }
@@ -865,14 +866,15 @@ button.link:hover { color: var(--chalk); text-decoration-color: var(--fog); bord
   grid-template-areas: "board copy" "board map";
 }
 .lb-hero { display: contents; }
-.hero-pb { grid-area: board; align-self: start; padding: 18px 20px 20px; display: grid; gap: 6px; margin: 3px; }
-.hp-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 50px; }
+.hero-pb { grid-area: board; align-self: start; padding: 18px 20px 20px; display: grid; gap: 4px; }
+.hp-big small { font-size: .5em; margin: 0 14px 0 3px; }
+.hp-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 46px; }
 .hp-dim { color: var(--fog); }
-.hp-big { font-size: 84px; color: var(--signal); margin-top: 4px; white-space: nowrap; }
+.hp-big { font-size: 80px; color: var(--signal); margin-top: 4px; white-space: nowrap; }
 .hp-big.live { color: var(--lights); }
 .hero-copy { grid-area: copy; }
 .hero-copy h1 { margin: 0 0 10px; font-size: 42px; line-height: 1.02; font-weight: 750; font-stretch: 85%; letter-spacing: -.01em; }
-.hero-copy p { margin: 0 0 18px; max-width: 54ch; color: #c9cbc6; font-size: 15px; line-height: 1.5; }
+.hero-copy p { margin: 0 0 18px; max-width: 54ch; color: #c3cbd6; font-size: 15px; line-height: 1.5; }
 .hero-copy .hero-note { margin: 12px 0 0; color: var(--fog); font-size: 13px; }
 .lb-preview { grid-area: map; margin-top: 24px; border-top: 1px solid var(--line); padding-top: 10px; display: flex; flex-direction: column; }
 #pv-map { width: 100%; height: 210px; display: block; }
@@ -912,7 +914,7 @@ button.link:hover { color: var(--chalk); text-decoration-color: var(--fog); bord
 .rp-pod { width: 1%; }
 .rp-pod span { margin-right: 14px; font-weight: 600; font-size: 13.5px; }
 .rp-pod span:first-child { color: var(--chalk); }
-.rp-pod span:not(:first-child) { color: #c9cbc6; font-weight: 500; }
+.rp-pod span:not(:first-child) { color: #c3cbd6; font-weight: 500; }
 .rp-pod em { font-style: normal; color: var(--fog); font-weight: 500; margin-right: 5px; font-size: 12px; }
 .rp-act { width: 1%; text-align: right; }
 .rp-act .link { margin-right: 10px; }

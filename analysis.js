@@ -242,9 +242,9 @@ function drawRibbon(d, t, field, ghost) {
   rctx.font = '10px system-ui'; rctx.textAlign = 'center';
   for (let g = 0; g <= maxGap; g += step) {
     rctx.fillStyle = '#212833'; rctx.fillRect(Math.round(x(g)), 6, 1, axisY - 6);
-    rctx.fillStyle = '#646b70'; rctx.font = '11px Archivo, system-ui'; rctx.fillText(g === 0 ? 'Leader' : `+${g}s`, x(g), h - 3);
+    rctx.fillStyle = '#6f7b8d'; rctx.font = '11px Archivo, system-ui'; rctx.fillText(g === 0 ? 'Leader' : `+${g}s`, x(g), h - 3);
   }
-  rctx.fillStyle = '#34393e'; rctx.fillRect(L, axisY, w - L - R, 1);
+  rctx.fillStyle = '#26303f'; rctx.fillRect(L, axisY, w - L - R, 1);
 
   // DRS links between consecutive cars
   for (let i = 1; i < pts.length; i++) {
@@ -270,17 +270,17 @@ function drawRibbon(d, t, field, ghost) {
   for (const { p, px, py } of placed) {
     const on = p.n === sel || p.n === cmp;
     rctx.globalAlpha = sel != null && !on ? 0.45 : 1;
-    rctx.strokeStyle = '#34393e'; rctx.lineWidth = 1;
+    rctx.strokeStyle = '#26303f'; rctx.lineWidth = 1;
     rctx.beginPath(); rctx.moveTo(px, py); rctx.lineTo(px, axisY); rctx.stroke();
     rctx.beginPath(); rctx.arc(px, py, on ? 6.5 : 5, 0, Math.PI * 2);
     rctx.fillStyle = p.drv.colour; rctx.fill();
-    rctx.lineWidth = 2; rctx.strokeStyle = '#212528'; rctx.stroke();
+    rctx.lineWidth = 2; rctx.strokeStyle = '#1a2230'; rctx.stroke();
     if (on) {
       if (p.n === cmp) rctx.setLineDash([2, 2]);
       rctx.beginPath(); rctx.arc(px, py, 9.5, 0, Math.PI * 2);
-      rctx.lineWidth = 1.5; rctx.strokeStyle = '#eeede6'; rctx.stroke(); rctx.setLineDash([]);
+      rctx.lineWidth = 1.5; rctx.strokeStyle = '#e4e9f0'; rctx.stroke(); rctx.setLineDash([]);
     }
-    rctx.fillStyle = on ? '#fff' : '#c9cbc6'; rctx.font = `${on ? 700 : 600} 11px Archivo, system-ui`;
+    rctx.fillStyle = on ? '#fff' : '#c3cbd6'; rctx.font = `${on ? 700 : 600} 11px Archivo, system-ui`;
     rctx.textAlign = 'left'; rctx.fillText(p.drv.code, px + (on ? 12 : 8), py + 4);
     rctx.globalAlpha = 1;
   }
@@ -297,7 +297,7 @@ function drawRibbon(d, t, field, ghost) {
     rctx.beginPath(); rctx.moveTo(fromX, gy - 4); rctx.lineTo(fromX, gy + 4); rctx.stroke();
     rctx.beginPath(); rctx.arc(gx, gy, 6, 0, Math.PI * 2); rctx.stroke();
     const code = d.drivers.get(sel).code;
-    rctx.fillStyle = '#eeede6'; rctx.font = '600 11px Archivo, system-ui';
+    rctx.fillStyle = '#e4e9f0'; rctx.font = '600 11px Archivo, system-ui';
     const label = `${code} after a stop, +${ghost.loss.toFixed(1)}s`;
     const lw = rctx.measureText(label).width;
     const lx = gx + 10 + lw < w ? gx + 10 : gx - 10 - lw; // keep it on canvas
@@ -320,7 +320,7 @@ function gapChart(b, d) {
   // neutralised laps shaded
   for (const hp of hist) if (!hp.green) svg += `<rect x="${x(hp.lap - 1)}" y="${T}" width="${Math.max(1, x(hp.lap) - x(hp.lap - 1))}" height="${H - T - B}" fill="#f2c230" opacity=".13"/>`;
   // grid: 0 line + top
-  svg += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="#34393e"/>`;
+  svg += `<line x1="${L}" x2="${W - R}" y1="${y(0)}" y2="${y(0)}" stroke="#26303f"/>`;
   svg += `<text x="${L - 4}" y="${y(0) + 3}" text-anchor="end" class="ax">0</text>`;
   svg += `<text x="${L - 4}" y="${y(yMax) + 8}" text-anchor="end" class="ax">${yMax.toFixed(0)}s</text>`;
   svg += `<text x="${L}" y="${H - 4}" class="ax">L${firstLap}</text><text x="${W - R}" y="${H - 4}" text-anchor="end" class="ax">L${lastLap}</text>`;
@@ -328,10 +328,10 @@ function gapChart(b, d) {
   svg += `<path d="${path}" fill="none" stroke="${d.drivers.get(b.B).colour}" stroke-width="2" stroke-linejoin="round"/>`;
   const last = hist.at(-1);
   if (b.catchLap) {
-    svg += `<line x1="${x(last.lap)}" y1="${y(last.gap)}" x2="${x(b.catchLap)}" y2="${y(0)}" stroke="#eeede6" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-    svg += `<circle cx="${x(b.catchLap)}" cy="${y(0)}" r="4" fill="none" stroke="#eeede6" stroke-width="1.5"/>`;
+    svg += `<line x1="${x(last.lap)}" y1="${y(last.gap)}" x2="${x(b.catchLap)}" y2="${y(0)}" stroke="#e4e9f0" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    svg += `<circle cx="${x(b.catchLap)}" cy="${y(0)}" r="4" fill="none" stroke="#e4e9f0" stroke-width="1.5"/>`;
   }
-  svg += `<circle cx="${x(last.lap)}" cy="${y(last.gap)}" r="4" fill="${d.drivers.get(b.B).colour}" stroke="#16191c" stroke-width="2"/>`;
+  svg += `<circle cx="${x(last.lap)}" cy="${y(last.gap)}" r="4" fill="${d.drivers.get(b.B).colour}" stroke="#121821" stroke-width="2"/>`;
   // hover targets
   for (const h of hist) svg += `<rect x="${x(h.lap) - 4}" y="${T}" width="8" height="${H - T - B}" fill="transparent"><title>Lap ${h.lap}: ${d.drivers.get(b.B).code} ${h.gap >= 0 ? h.gap.toFixed(2) + 's behind' : (-h.gap).toFixed(2) + 's ahead of'} ${d.drivers.get(b.A).code}${h.green ? '' : ' (SC/VSC)'}</title></rect>`;
   return svg + '</svg>';
