@@ -985,3 +985,5 @@ button.race-card:hover { background: var(--pitlane); border-color: transparent; 
 .race-card.live .rc-st { color: var(--lights); }
 .podium li:first-child { color: var(--chalk); }
 .archive-years button { flex: none; }
+/* timing board: a touch narrower than body text, like a timing tower */
+.board table { font-stretch: 88%; }
