@@ -570,8 +570,8 @@ body { grid-template-columns: minmax(0, 1fr); }
 .rec-table span { color: var(--fog); }
 
 /* ---------- qualifying ---------- */
-body.is-quali .analysis, body.is-quali #title-btn { display: none; }
-body.is-quali .map-wrap { grid-row: 1 / span 2; }
+body.is-quali .analysis, body.is-quali #title-btn, body.is-practice .analysis, body.is-practice #title-btn { display: none; }
+body.is-quali .map-wrap, body.is-practice .map-wrap { grid-row: 1 / span 2; }
 .board tr.q-line td { box-shadow: inset 0 2px 0 var(--red); }
 .board tr.q-danger td.pos { color: var(--red); }
 .q-need { color: var(--red); font-size: 12px; white-space: nowrap; }
@@ -1016,3 +1016,9 @@ button.race-card:hover { background: var(--pitlane); border-color: transparent; 
   .side { max-height: none; min-height: 50vh; }
   .c-stops, .board th.th-add, .board td.td-add { display: none; }
 }
+
+/* phones in qualifying and practice: no analysis tab (those panels are race-only) */
+@media (max-width: 760px) {
+  body.is-quali .phone-tabs [data-pt="analysis"], body.is-practice .phone-tabs [data-pt="analysis"] { display: none; }
+}
+body.is-quali .calls-head, body.is-practice .calls-head { display: none; }

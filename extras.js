@@ -159,8 +159,13 @@ function drawPreview(cv, f) {
     }
     dispatchEvent(new Event('resize')); // charts size themselves when they become visible
   };
-  nav.addEventListener('click', (e) => { const b = e.target.closest('button[data-pt]'); if (b) pick(b.dataset.pt); });
-  pick('calls');
+  let current = null, chosen = false;
+  const pick0 = pick;
+  const set = (k) => { if (k !== current) { current = k; pick0(k); } };
+  nav.addEventListener('click', (e) => { const b = e.target.closest('button[data-pt]'); if (b) { chosen = true; set(b.dataset.pt); } });
+  // the session decides the starting tab (timing in practice and qualifying) until the visitor picks one
+  window.phoneTabDefault = (k) => { if (!chosen) set(k); };
+  set('calls');
 })();
 
 (function wireExtras() {

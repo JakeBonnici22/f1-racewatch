@@ -158,6 +158,7 @@ function renderQualiBoard(t) {
     requestAnimationFrame(() => { tr.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)'; tr.style.transform = ''; });
   }
   // top bar: part and time left instead of lap and race time
+  document.querySelector('.lapbox .lbl').textContent = '';
   document.querySelector('#lap').textContent = q.label;
   document.querySelector('#lap-total').textContent = '';
   document.querySelector('.clockbox .lbl').textContent = typeof q.clock === 'number' ? 'Time left' : '';

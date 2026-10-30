@@ -318,7 +318,8 @@ const CALL_LABEL = { battle: 'Battle', strategy: 'Strategy', status: 'Track', st
 function renderCalls(t) {
   const d = state.data;
   if (!d) return;
-  if (!d.calls) d.calls = typeof isQuali === 'function' && isQuali(d) ? [] : buildCalls(d); // race calls are about races
+  const notRace = (typeof isQuali === 'function' && isQuali(d)) || (typeof isPractice === 'function' && isPractice(d));
+  if (!d.calls) d.calls = notRace ? [] : buildCalls(d); // race calls are about races
   const sel = state.selected;
   const onlyMine = state.callsMine && sel != null;
   const shown = [];
@@ -356,7 +357,7 @@ function renderCalls(t) {
         <div class="call-meta"><span class="call-type ${c.type}">${CALL_LABEL[c.type]}</span><span>Lap ${c.lap}</span></div>
         <div class="call-text">${c.text}</div>${badge}
       </div></li>`;
-  }).join('') || `<li class="empty">${onlyMine ? 'Nothing yet involving your drivers.' : 'Calls appear here as the race unfolds.'}</li>`;
+  }).join('') || `<li class="empty">${onlyMine ? 'Nothing yet involving your drivers.' : notRace ? 'Race calls run in races and sprints. Race control, pit stops and radio are in the other tabs.' : 'Calls appear here as the race unfolds.'}</li>`;
   state.callsSeen = (visible[0]?.id ?? -1) + 1;
 }
 

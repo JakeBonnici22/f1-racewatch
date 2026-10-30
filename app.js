@@ -258,8 +258,9 @@ function renderTop(t) {
   el.className = `status ${s}`;
   el.textContent = STATUS[s][0];
 
-  if (!(typeof isQuali === 'function' && isQuali(d))) { // qualifying shows its part and time left instead
+  if (!(typeof isQuali === 'function' && isQuali(d)) && !(typeof isPractice === 'function' && isPractice(d))) { // qualifying and practice show the session and time left instead
     const leaderLap = d.leaderLaps[lastIdx(d.leaderLaps.map((l) => l.t), t)]?.n ?? 0;
+    $('.lapbox .lbl').textContent = 'Lap';
     $('#lap').textContent = leaderLap || '–';
     $('#lap-total').textContent = d.live && !d.totalLapsKnown ? '' : ` / ${d.totalLaps}`;
     $('.clockbox .lbl').textContent = 'Race time';
@@ -285,8 +286,13 @@ function actLabel(n) {
   return state.selected == null ? 'Follow' : 'Compare';
 }
 function renderBoard(t) {
-  document.body.classList.toggle('is-quali', typeof isQuali === 'function' && isQuali(state.data));
-  if (typeof isQuali === 'function' && isQuali(state.data)) { renderQualiBoard(t); return; }
+  const quali = typeof isQuali === 'function' && isQuali(state.data);
+  const prac = typeof isPractice === 'function' && isPractice(state.data);
+  document.body.classList.toggle('is-quali', quali);
+  document.body.classList.toggle('is-practice', prac);
+  if (typeof phoneTabDefault === 'function') phoneTabDefault(quali || prac ? 'timing' : 'calls'); // no race calls outside races
+  if (prac) { renderPracticeBoard(t); return; }
+  if (quali) { renderQualiBoard(t); return; }
   const { rows, overallBest, ob } = boardAt(t);
   if (typeof ensureBoardHeader === 'function') ensureBoardHeader();
   state.lastBoard = rows;
