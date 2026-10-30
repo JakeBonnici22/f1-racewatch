@@ -186,8 +186,27 @@ function carXY(L, t) {
   return [L.x[i] + (L.x[i + 1] - L.x[i]) * f, L.y[i] + (L.y[i + 1] - L.y[i]) * f];
 }
 
+
+// A retired car often keeps sending a location (parked by the track or back in
+// the garage), so location alone doesn't show it has stopped. Its timing does:
+// out when its gap feed has been quiet for 2 minutes while other cars' keep
+// updating. Measured against the freshest car, so a red flag (everyone's feed
+// stops together) doesn't empty the field.
+function freshestTiming(d, t) {
+  let m = -Infinity;
+  for (const [, s] of d.intervals) { const r = at(s, t); if (r && r.t > m) m = r.t; }
+  return m;
+}
+function timingQuiet(d, n, t, freshest) {
+  if (!Number.isFinite(freshest) || t < d.lightsOut + 180_000) return false;
+  const r = at(d.intervals.get(n), t);
+  return freshest - (r?.t ?? -Infinity) > 120_000;
+}
 function boardAt(t) {
   const d = state.data;
+  // after the flag cars stop sending timing one by one: judge quiet timing at the flag
+  const tQuiet = d.status.rows.some((x) => x.s === 'FINISH') ? Math.min(t, d.finish) : t;
+  const freshest = freshestTiming(d, tQuiet);
   let overallBest = Infinity;
   const ob = { s1: Infinity, s2: Infinity, s3: Infinity, trap: 0 }; // session bests so far
   const rows = [];
@@ -235,7 +254,7 @@ function boardAt(t) {
     let out;
     // after the flag, judge "out" at the flag: parked cars aren't retirements
     const tOut = d.status.rows.some((x) => x.s === 'FINISH') ? Math.min(t, d.finish + 60_000) : t;
-    if (d.location.size) out = tOut > d.lightsOut && (!L || !carXY(L, tOut));
+    if (d.location.size) out = tOut > d.lightsOut && ((!L || !carXY(L, tOut)) || timingQuiet(d, n, tQuiet, freshest));
     else {
       const lastStart = lapsS ? at(lapsS, t)?.t ?? -Infinity : -Infinity;
       const lastEnd = lapsS ? lapsS.endTs[lastIdx(lapsS.endTs, t)] ?? -Infinity : -Infinity;

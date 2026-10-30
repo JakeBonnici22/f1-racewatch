@@ -44,13 +44,15 @@ function buildCalls(d) {
   const finished = d.status.rows.some((x) => x.s === 'FINISH');
   const lightBoard = (t) => {
     const rows = [];
+    const tQuiet = finished ? Math.min(t, d.finish) : t; // after the flag, judge quiet timing at the flag
+    const freshest = freshestTiming(d, tQuiet);
     for (const [n, drv] of d.drivers) {
       const pos = at(d.position.get(n), t)?.pos ?? d.grid.get(n) ?? 99;
       const gap = at(d.intervals.get(n), t)?.gap;
       let out;
       if (d.location.size) {
         const L = d.location.get(n), tOut = finished ? Math.min(t, d.finish + 60_000) : t;
-        out = tOut > d.lightsOut && (!L || !carXY(L, tOut));
+        out = tOut > d.lightsOut && ((!L || !carXY(L, tOut)) || timingQuiet(d, n, tQuiet, freshest));
       } else {
         const s = d.laps.get(n);
         const lastStart = s ? at(s, t)?.t ?? -Infinity : -Infinity;
@@ -177,8 +179,11 @@ function buildCalls(d) {
     const out = d.lapNo.get(p.num)?.get(p.lap + 1);
     if (!out?.end || p.t < d.lightsOut) continue;
     const t = out.end + 1;
-    const before = posAt(p.num, p.t - 2000), after = posAt(p.num, t);
-    const tEntry = p.t - 2000;
+    // OpenF1 stamps a stop as the car leaves the pit lane: step back by the lane time
+    // so the place before the stop and the rejoin call are taken as the car comes in
+    const tIn = p.t - (p.lane ?? 0) * 1000;
+    const before = posAt(p.num, tIn - 2000), after = posAt(p.num, t);
+    const tEntry = tIn - 2000;
     const neutral = ['SC', 'VSC', 'SC_IN', 'VSC_END'].includes(statusOf(tEntry));
     const lossNow = pitLossAt(d, tEntry, neutral ? 'neutral' : 'green');
     const r = lossNow && rejoinAt(d, tEntry, p.num, fieldAtT(tEntry), lossNow.loss);

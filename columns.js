@@ -18,8 +18,8 @@ const sector = (k) => ({
 const BOARD_COLS = {
   delta: { label: '+/−', title: 'Places gained or lost since the start', num: true, cell: (r, cx) => cx.delta },
   gap: { label: 'Gap', title: 'Gap to the leader', num: true,
-    cell: (r, cx) => (cx.isLeader ? `<span class="muted">Lap ${r.curLap}</span>` : fmtGap(r.gap)) },
-  int: { label: 'Int', title: 'Gap to the car ahead', num: true, cell: (r, cx) => (cx.isLeader ? '' : fmtGap(r.int)) },
+    cell: (r, cx) => (r.out ? '' : cx.isLeader ? `<span class="muted">Lap ${r.curLap}</span>` : fmtGap(r.gap)) }, // a retired car's last gap is stale
+  int: { label: 'Int', title: 'Gap to the car ahead', num: true, cell: (r, cx) => (cx.isLeader || r.out ? '' : fmtGap(r.int)) },
   tyre: { label: 'Tyre', title: 'Compound and laps on it', num: false,
     cell: (r, cx) => (cx.ty ? `<span class="tyre" title="${r.tyre.sure ? r.tyre.c.toLowerCase() + ', ' + r.tyre.age + ' laps old' : 'Pitted: new compound not in the feed yet'}"><i class="${r.tyre.sure ? '' : 'unsure'}" style="--c:${cx.ty[1]}">${r.tyre.sure ? cx.ty[0] : '?'}</i>${r.tyre.age}</span>` : '') },
   stops: { label: 'Stops', title: 'Pit stops made', num: true, cell: (r) => r.pitsDone || '' },
